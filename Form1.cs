@@ -13,7 +13,7 @@ namespace Image_Processing
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.ico|All Files|*.*";
+                openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.ico;*.tiff|All Files|*.*";
                 openFileDialog.FilterIndex = 1;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -34,6 +34,16 @@ namespace Image_Processing
                     }
                 }
             }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
