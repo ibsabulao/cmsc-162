@@ -95,29 +95,30 @@
             // tableLayoutPanel1
             // 
             tableLayoutPanel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            tableLayoutPanel1.BackColor = SystemColors.ActiveBorder;
+            tableLayoutPanel1.BackColor = SystemColors.ButtonHighlight;
             tableLayoutPanel1.ColumnCount = 3;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 23.0263176F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 53.9473724F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 23.0263176F));
             tableLayoutPanel1.Controls.Add(ViewImage, 1, 0);
-            tableLayoutPanel1.Location = new Point(15, 39);
+            tableLayoutPanel1.ForeColor = SystemColors.GrayText;
+            tableLayoutPanel1.Location = new Point(0, 37);
             tableLayoutPanel1.Margin = new Padding(4);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 1;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.Size = new Size(948, 512);
+            tableLayoutPanel1.Size = new Size(978, 529);
             tableLayoutPanel1.TabIndex = 1;
             tableLayoutPanel1.Paint += tableLayoutPanel1_Paint;
             // 
             // ViewImage
             // 
             ViewImage.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            ViewImage.BackColor = SystemColors.Desktop;
-            ViewImage.Location = new Point(222, 4);
+            ViewImage.BackColor = SystemColors.Menu;
+            ViewImage.Location = new Point(229, 4);
             ViewImage.Margin = new Padding(4);
             ViewImage.Name = "ViewImage";
-            ViewImage.Size = new Size(503, 504);
+            ViewImage.Size = new Size(519, 521);
             ViewImage.SizeMode = PictureBoxSizeMode.Zoom;
             ViewImage.TabIndex = 1;
             ViewImage.TabStop = false;
@@ -127,13 +128,16 @@
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
+            BackColor = SystemColors.ButtonFace;
             ClientSize = new Size(978, 566);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(menuStrip1);
+            ForeColor = SystemColors.ActiveBorder;
             MainMenuStrip = menuStrip1;
             Margin = new Padding(4);
             Name = "Form1";
             Text = "View";
+            WindowState = FormWindowState.Maximized;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
             tableLayoutPanel1.ResumeLayout(false);
