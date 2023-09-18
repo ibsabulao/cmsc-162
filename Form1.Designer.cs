@@ -50,7 +50,7 @@
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Padding = new Padding(8, 2, 0, 2);
-            menuStrip1.Size = new Size(978, 33);
+            menuStrip1.Size = new Size(1898, 33);
             menuStrip1.TabIndex = 0;
             menuStrip1.Text = "menuStrip1";
             // 
@@ -107,7 +107,7 @@
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 1;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.Size = new Size(978, 529);
+            tableLayoutPanel1.Size = new Size(1898, 987);
             tableLayoutPanel1.TabIndex = 1;
             tableLayoutPanel1.Paint += tableLayoutPanel1_Paint;
             // 
@@ -115,10 +115,10 @@
             // 
             ViewImage.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             ViewImage.BackColor = SystemColors.Menu;
-            ViewImage.Location = new Point(229, 4);
+            ViewImage.Location = new Point(441, 4);
             ViewImage.Margin = new Padding(4);
             ViewImage.Name = "ViewImage";
-            ViewImage.Size = new Size(519, 521);
+            ViewImage.Size = new Size(1015, 979);
             ViewImage.SizeMode = PictureBoxSizeMode.Zoom;
             ViewImage.TabIndex = 1;
             ViewImage.TabStop = false;
@@ -127,15 +127,16 @@
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            AutoSize = true;
             BackColor = SystemColors.ButtonFace;
-            ClientSize = new Size(978, 566);
+            ClientSize = new Size(1898, 1024);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(menuStrip1);
             ForeColor = SystemColors.ActiveBorder;
             MainMenuStrip = menuStrip1;
             Margin = new Padding(4);
             Name = "Form1";
+            SizeGripStyle = SizeGripStyle.Hide;
+            StartPosition = FormStartPosition.WindowsDefaultBounds;
             Text = "View";
             WindowState = FormWindowState.Maximized;
             menuStrip1.ResumeLayout(false);
