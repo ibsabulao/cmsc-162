@@ -31,6 +31,8 @@
             menuStrip1 = new MenuStrip();
             menu1ToolStripMenuItem = new ToolStripMenuItem();
             openImageToolStripMenuItem = new ToolStripMenuItem();
+            openImageFileToolStripMenuItem = new ToolStripMenuItem();
+            openPCXFileToolStripMenuItem = new ToolStripMenuItem();
             menu2ToolStripMenuItem = new ToolStripMenuItem();
             processToolStripMenuItem = new ToolStripMenuItem();
             filterToolStripMenuItem = new ToolStripMenuItem();
@@ -63,10 +65,25 @@
             // 
             // openImageToolStripMenuItem
             // 
+            openImageToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { openImageFileToolStripMenuItem, openPCXFileToolStripMenuItem });
             openImageToolStripMenuItem.Name = "openImageToolStripMenuItem";
-            openImageToolStripMenuItem.Size = new Size(201, 34);
+            openImageToolStripMenuItem.Size = new Size(270, 34);
             openImageToolStripMenuItem.Text = "Open File...";
             openImageToolStripMenuItem.Click += ViewImage_Click;
+            // 
+            // openImageFileToolStripMenuItem
+            // 
+            openImageFileToolStripMenuItem.Name = "openImageFileToolStripMenuItem";
+            openImageFileToolStripMenuItem.Size = new Size(270, 34);
+            openImageFileToolStripMenuItem.Text = "Open Image File...";
+            openImageFileToolStripMenuItem.Click += ViewImage_Click;
+            // 
+            // openPCXFileToolStripMenuItem
+            // 
+            openPCXFileToolStripMenuItem.Name = "openPCXFileToolStripMenuItem";
+            openPCXFileToolStripMenuItem.Size = new Size(270, 34);
+            openPCXFileToolStripMenuItem.Text = "Open PCX File...";
+            openPCXFileToolStripMenuItem.Click += ViewPCX_Click;
             // 
             // menu2ToolStripMenuItem
             // 
@@ -109,7 +126,6 @@
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel1.Size = new Size(1898, 987);
             tableLayoutPanel1.TabIndex = 1;
-            tableLayoutPanel1.Paint += tableLayoutPanel1_Paint;
             // 
             // ViewImage
             // 
@@ -158,5 +174,7 @@
         private TableLayoutPanel tableLayoutPanel1;
         private PictureBox ViewImage;
         private ToolStripMenuItem openImageToolStripMenuItem;
+        private ToolStripMenuItem openImageFileToolStripMenuItem;
+        private ToolStripMenuItem openPCXFileToolStripMenuItem;
     }
 }

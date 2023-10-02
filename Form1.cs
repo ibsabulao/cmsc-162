@@ -36,14 +36,19 @@ namespace Image_Processing
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void ViewPCX_Click(object sender, EventArgs e)
         {
+            using (OpenFileDialog openFileDialog_1 = new OpenFileDialog())
+            {
+                openFileDialog_1.Filter = "PCX Files | *.pcx";
+                openFileDialog_1.FilterIndex = 1;
 
-        }
+                if (openFileDialog_1.ShowDialog() == DialogResult.OK)
+                {
+                    string selectedFilePath = openFileDialog_1.FileName;
 
-        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
-        {
-
+                }
+            }
         }
     }
 }
