@@ -36,6 +36,21 @@ namespace Image_Processing
             }
         }
 
+        static void RunLength_PCX(string inputFilePath)
+        {
+            byte[] PCX_data = File.ReadAllBytes(inputFilePath);
+
+            try
+            {
+
+            }
+
+            catch (Exception ex)
+            {
+
+            }
+        }
+
         private void ViewPCX_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog_1 = new OpenFileDialog())
@@ -46,6 +61,8 @@ namespace Image_Processing
                 if (openFileDialog_1.ShowDialog() == DialogResult.OK)
                 {
                     string selectedFilePath = openFileDialog_1.FileName;
+
+
 
                 }
             }
