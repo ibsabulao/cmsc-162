@@ -39,14 +39,15 @@
             animationToolStripMenuItem = new ToolStripMenuItem();
             tableLayoutPanel1 = new TableLayoutPanel();
             tableLayoutPanel2 = new TableLayoutPanel();
-            pictureBox1 = new PictureBox();
-            label1 = new Label();
-            PCX_infoBox = new RichTextBox();
+            PCXviewImg = new PictureBox();
+            pcxLabel = new Label();
+            PCXheaderInfoBox = new RichTextBox();
+            pcxPalette = new Panel();
             ViewImage = new PictureBox();
             menuStrip1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)PCXviewImg).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ViewImage).BeginInit();
             SuspendLayout();
             // 
@@ -75,7 +76,6 @@
             openImageToolStripMenuItem.Name = "openImageToolStripMenuItem";
             openImageToolStripMenuItem.Size = new Size(201, 34);
             openImageToolStripMenuItem.Text = "Open File...";
-            openImageToolStripMenuItem.Click += ViewImage_Click;
             // 
             // openImageFileToolStripMenuItem
             // 
@@ -138,52 +138,66 @@
             // 
             tableLayoutPanel2.ColumnCount = 1;
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel2.Controls.Add(pictureBox1, 0, 1);
-            tableLayoutPanel2.Controls.Add(label1, 0, 0);
-            tableLayoutPanel2.Controls.Add(PCX_infoBox, 0, 2);
+            tableLayoutPanel2.Controls.Add(PCXviewImg, 0, 1);
+            tableLayoutPanel2.Controls.Add(pcxLabel, 0, 0);
+            tableLayoutPanel2.Controls.Add(PCXheaderInfoBox, 0, 2);
+            tableLayoutPanel2.Controls.Add(pcxPalette, 0, 3);
             tableLayoutPanel2.Location = new Point(3, 3);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
-            tableLayoutPanel2.RowCount = 3;
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 5.51542F));
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 45.8097153F));
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 48.6748619F));
-            tableLayoutPanel2.Size = new Size(431, 763);
+            tableLayoutPanel2.RowCount = 4;
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 2.691249F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 29.2976322F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 46.3545036F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 21.65662F));
+            tableLayoutPanel2.Size = new Size(431, 981);
             tableLayoutPanel2.TabIndex = 2;
             // 
-            // pictureBox1
+            // PCXviewImg
             // 
-            pictureBox1.BackColor = SystemColors.MenuBar;
-            pictureBox1.Dock = DockStyle.Fill;
-            pictureBox1.Location = new Point(3, 45);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(425, 343);
-            pictureBox1.TabIndex = 0;
-            pictureBox1.TabStop = false;
+            PCXviewImg.BackColor = SystemColors.Desktop;
+            PCXviewImg.Dock = DockStyle.Fill;
+            PCXviewImg.Location = new Point(3, 29);
+            PCXviewImg.Name = "PCXviewImg";
+            PCXviewImg.Size = new Size(425, 281);
+            PCXviewImg.TabIndex = 0;
+            PCXviewImg.TabStop = false;
             // 
-            // label1
+            // pcxLabel
             // 
-            label1.AutoSize = true;
-            label1.Dock = DockStyle.Fill;
-            label1.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point);
-            label1.ForeColor = SystemColors.ControlText;
-            label1.Location = new Point(3, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(425, 42);
-            label1.TabIndex = 1;
-            label1.Text = "Original Image";
+            pcxLabel.AutoSize = true;
+            pcxLabel.BackColor = SystemColors.Desktop;
+            pcxLabel.Dock = DockStyle.Fill;
+            pcxLabel.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point);
+            pcxLabel.ForeColor = SystemColors.ControlText;
+            pcxLabel.Location = new Point(3, 0);
+            pcxLabel.Name = "pcxLabel";
+            pcxLabel.Size = new Size(425, 26);
+            pcxLabel.TabIndex = 1;
             // 
-            // PCX_infoBox
+            // PCXheaderInfoBox
             // 
-            PCX_infoBox.BackColor = SystemColors.ControlLightLight;
-            PCX_infoBox.BorderStyle = BorderStyle.None;
-            PCX_infoBox.Dock = DockStyle.Fill;
-            PCX_infoBox.Enabled = false;
-            PCX_infoBox.Location = new Point(3, 394);
-            PCX_infoBox.Name = "PCX_infoBox";
-            PCX_infoBox.ReadOnly = true;
-            PCX_infoBox.Size = new Size(425, 366);
-            PCX_infoBox.TabIndex = 2;
-            PCX_infoBox.Text = "";
+            PCXheaderInfoBox.BackColor = SystemColors.Desktop;
+            PCXheaderInfoBox.BorderStyle = BorderStyle.None;
+            PCXheaderInfoBox.Dock = DockStyle.Fill;
+            PCXheaderInfoBox.Enabled = false;
+            PCXheaderInfoBox.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            PCXheaderInfoBox.ForeColor = SystemColors.MenuText;
+            PCXheaderInfoBox.Location = new Point(3, 316);
+            PCXheaderInfoBox.Name = "PCXheaderInfoBox";
+            PCXheaderInfoBox.ReadOnly = true;
+            PCXheaderInfoBox.ScrollBars = RichTextBoxScrollBars.None;
+            PCXheaderInfoBox.Size = new Size(425, 448);
+            PCXheaderInfoBox.TabIndex = 2;
+            PCXheaderInfoBox.Text = "";
+            // 
+            // pcxPalette
+            // 
+            pcxPalette.BackColor = SystemColors.Desktop;
+            pcxPalette.Dock = DockStyle.Fill;
+            pcxPalette.Location = new Point(3, 770);
+            pcxPalette.Name = "pcxPalette";
+            pcxPalette.Size = new Size(425, 208);
+            pcxPalette.TabIndex = 3;
             // 
             // ViewImage
             // 
@@ -218,7 +232,7 @@
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel2.ResumeLayout(false);
             tableLayoutPanel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)PCXviewImg).EndInit();
             ((System.ComponentModel.ISupportInitialize)ViewImage).EndInit();
             ResumeLayout(false);
             PerformLayout();
@@ -238,8 +252,9 @@
         private ToolStripMenuItem openImageFileToolStripMenuItem;
         private ToolStripMenuItem openPCXFileToolStripMenuItem;
         private TableLayoutPanel tableLayoutPanel2;
-        private PictureBox pictureBox1;
-        private Label label1;
-        private RichTextBox PCX_infoBox;
+        private PictureBox PCXviewImg;
+        private Label pcxLabel;
+        private RichTextBox PCXheaderInfoBox;
+        private Panel pcxPalette;
     }
 }
