@@ -154,11 +154,12 @@
             // 
             // PCXviewImg
             // 
+            PCXviewImg.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             PCXviewImg.BackColor = SystemColors.Desktop;
-            PCXviewImg.Dock = DockStyle.Fill;
             PCXviewImg.Location = new Point(3, 29);
             PCXviewImg.Name = "PCXviewImg";
             PCXviewImg.Size = new Size(425, 281);
+            PCXviewImg.SizeMode = PictureBoxSizeMode.AutoSize;
             PCXviewImg.TabIndex = 0;
             PCXviewImg.TabStop = false;
             // 

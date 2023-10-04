@@ -127,10 +127,10 @@ namespace Image_Processing
                             fileStream.Read(paletteData, 0, 768);
                             PCX_DisplayPalette(paletteData);
 
-                            // pcx image
-                            PCXviewImg.Image = Image.FromStream(fileStream);
+                            // image
+                            Bitmap pcxImg = new Bitmap(fileStream);
+                            PCXviewImg.Image = pcxImg;
                         }
-
                     }
 
                     catch (Exception ex)
