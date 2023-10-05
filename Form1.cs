@@ -1,9 +1,17 @@
+using System.Reflection.PortableExecutable;
 using System.Windows.Forms;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 namespace Image_Processing
 {
     public partial class Form1 : Form
     {
+
+        private Bitmap currentImage; // Store the currently loaded PCX image
+        private double imageScale = 1.0; // Initial image scale
+
         public Form1()
         {
             InitializeComponent();
@@ -76,6 +84,8 @@ namespace Image_Processing
 
         private void PCX_DisplayPalette(byte[] paletteData)
         {
+            pcxPalette.Controls.Clear();
+
             PCXheaderInfoBox.AppendText("\nColor Palette:" + Environment.NewLine);
 
             int paletteSize = paletteData.Length / 3;
@@ -99,6 +109,33 @@ namespace Image_Processing
             }
         }
 
+        public static byte[] DecodeRLE(byte[] data)
+        {
+            using (MemoryStream decompressedStream = new MemoryStream())
+            {
+                int index = 0;
+                int count;
+
+                while (index < data.Length)
+                {
+                    byte currentByte = data[index++];
+                    if ((currentByte & 0xC0) == 0xC0)
+                    {
+                        count = currentByte & 0x3F;
+                        byte value = data[index++];
+                        for (int i = 0; i < count; i++)
+                            decompressedStream.WriteByte(value);
+                    }
+                    else
+                    {
+                        count = 1;
+                        decompressedStream.WriteByte(currentByte);
+                    }
+                }
+
+                return decompressedStream.ToArray();
+            }
+        }
         private void ViewPCX_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog_1 = new OpenFileDialog())
@@ -114,6 +151,8 @@ namespace Image_Processing
                     {
                         using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Open, FileAccess.Read))
                         {
+
+
                             pcxLabel.Text = "Original Image";
 
                             // header
@@ -128,8 +167,34 @@ namespace Image_Processing
                             PCX_DisplayPalette(paletteData);
 
                             // image
-                            Bitmap pcxImg = new Bitmap(fileStream);
-                            PCXviewImg.Image = pcxImg;
+                            int width = header[8] + (header[9] << 8) + 1;
+                            int height = header[10] + (header[11] << 8) + 1;
+
+                            Bitmap bmp = new Bitmap(width, height);
+
+                            // Read the RLE-encoded pixel data
+                            int pixelDataSize = width * height * (header[3] / 8);
+                            byte[] compressedData = new byte[pixelDataSize];
+                            fileStream.Seek(128, SeekOrigin.Begin); // Seek to the start of the pixel data
+                            fileStream.Read(compressedData, 0, pixelDataSize);
+
+                            // Decode the RLE-encoded pixel data
+                            byte[] decompressedData = DecodeRLE(compressedData);
+
+                            // Create a Bitmap from the decoded pixel data
+                            int index = 0;
+                            for (int y = 0; y < height; y++)
+                            {
+                                for (int x = 0; x < width; x++)
+                                {
+                                    int colorIndex = decompressedData[index++];
+                                    Color pixelColor = Color.FromArgb(paletteData[colorIndex * 3], paletteData[colorIndex * 3 + 1], paletteData[colorIndex * 3 + 2]);
+                                    bmp.SetPixel(x, y, pixelColor);
+                                }
+                            }
+
+                            // Display the PCX image in the PictureBox control
+                            ViewImage.Image = bmp;
                         }
                     }
 

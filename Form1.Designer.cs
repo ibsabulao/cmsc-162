@@ -39,7 +39,6 @@
             animationToolStripMenuItem = new ToolStripMenuItem();
             tableLayoutPanel1 = new TableLayoutPanel();
             tableLayoutPanel2 = new TableLayoutPanel();
-            PCXviewImg = new PictureBox();
             pcxLabel = new Label();
             PCXheaderInfoBox = new RichTextBox();
             pcxPalette = new Panel();
@@ -47,7 +46,6 @@
             menuStrip1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)PCXviewImg).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ViewImage).BeginInit();
             SuspendLayout();
             // 
@@ -138,30 +136,17 @@
             // 
             tableLayoutPanel2.ColumnCount = 1;
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel2.Controls.Add(PCXviewImg, 0, 1);
             tableLayoutPanel2.Controls.Add(pcxLabel, 0, 0);
-            tableLayoutPanel2.Controls.Add(PCXheaderInfoBox, 0, 2);
-            tableLayoutPanel2.Controls.Add(pcxPalette, 0, 3);
+            tableLayoutPanel2.Controls.Add(PCXheaderInfoBox, 0, 1);
+            tableLayoutPanel2.Controls.Add(pcxPalette, 0, 2);
             tableLayoutPanel2.Location = new Point(3, 3);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
-            tableLayoutPanel2.RowCount = 4;
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 2.691249F));
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 29.2976322F));
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 46.3545036F));
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 21.65662F));
+            tableLayoutPanel2.RowCount = 3;
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 4.50802565F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 59.21565F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 36.27632F));
             tableLayoutPanel2.Size = new Size(431, 981);
             tableLayoutPanel2.TabIndex = 2;
-            // 
-            // PCXviewImg
-            // 
-            PCXviewImg.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            PCXviewImg.BackColor = SystemColors.Desktop;
-            PCXviewImg.Location = new Point(3, 29);
-            PCXviewImg.Name = "PCXviewImg";
-            PCXviewImg.Size = new Size(425, 281);
-            PCXviewImg.SizeMode = PictureBoxSizeMode.AutoSize;
-            PCXviewImg.TabIndex = 0;
-            PCXviewImg.TabStop = false;
             // 
             // pcxLabel
             // 
@@ -172,7 +157,7 @@
             pcxLabel.ForeColor = SystemColors.ControlText;
             pcxLabel.Location = new Point(3, 0);
             pcxLabel.Name = "pcxLabel";
-            pcxLabel.Size = new Size(425, 26);
+            pcxLabel.Size = new Size(425, 44);
             pcxLabel.TabIndex = 1;
             // 
             // PCXheaderInfoBox
@@ -183,11 +168,11 @@
             PCXheaderInfoBox.Enabled = false;
             PCXheaderInfoBox.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
             PCXheaderInfoBox.ForeColor = SystemColors.MenuText;
-            PCXheaderInfoBox.Location = new Point(3, 316);
+            PCXheaderInfoBox.Location = new Point(3, 47);
             PCXheaderInfoBox.Name = "PCXheaderInfoBox";
             PCXheaderInfoBox.ReadOnly = true;
             PCXheaderInfoBox.ScrollBars = RichTextBoxScrollBars.None;
-            PCXheaderInfoBox.Size = new Size(425, 448);
+            PCXheaderInfoBox.Size = new Size(425, 574);
             PCXheaderInfoBox.TabIndex = 2;
             PCXheaderInfoBox.Text = "";
             // 
@@ -195,9 +180,9 @@
             // 
             pcxPalette.BackColor = SystemColors.Desktop;
             pcxPalette.Dock = DockStyle.Fill;
-            pcxPalette.Location = new Point(3, 770);
+            pcxPalette.Location = new Point(3, 627);
             pcxPalette.Name = "pcxPalette";
-            pcxPalette.Size = new Size(425, 208);
+            pcxPalette.Size = new Size(425, 351);
             pcxPalette.TabIndex = 3;
             // 
             // ViewImage
@@ -233,7 +218,6 @@
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel2.ResumeLayout(false);
             tableLayoutPanel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)PCXviewImg).EndInit();
             ((System.ComponentModel.ISupportInitialize)ViewImage).EndInit();
             ResumeLayout(false);
             PerformLayout();
@@ -253,7 +237,6 @@
         private ToolStripMenuItem openImageFileToolStripMenuItem;
         private ToolStripMenuItem openPCXFileToolStripMenuItem;
         private TableLayoutPanel tableLayoutPanel2;
-        private PictureBox PCXviewImg;
         private Label pcxLabel;
         private RichTextBox PCXheaderInfoBox;
         private Panel pcxPalette;
