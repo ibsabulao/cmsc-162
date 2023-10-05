@@ -8,10 +8,6 @@ namespace Image_Processing
 {
     public partial class Form1 : Form
     {
-
-        private Bitmap currentImage; // Store the currently loaded PCX image
-        private double imageScale = 1.0; // Initial image scale
-
         public Form1()
         {
             InitializeComponent();
@@ -33,6 +29,8 @@ namespace Image_Processing
                         // Load the image and display it in the PictureBox control
                         using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Open))
                         {
+                            PCXheaderInfoBox.Clear();
+
                             ViewImage.Image = Image.FromStream(fileStream);
                         }
                     }
@@ -84,13 +82,16 @@ namespace Image_Processing
 
         private void PCX_DisplayPalette(byte[] paletteData)
         {
-            pcxPalette.Controls.Clear();
+            PCXheaderInfoBox.Controls.Clear();
 
             PCXheaderInfoBox.AppendText("\nColor Palette:" + Environment.NewLine);
 
             int paletteSize = paletteData.Length / 3;
             int paletteWidth = 10;
             int paletteHeight = 10;
+
+            // Calculate the starting Y coordinate for appending below the text
+            int startY = PCXheaderInfoBox.GetPositionFromCharIndex(PCXheaderInfoBox.Text.Length - 1).Y + PCXheaderInfoBox.Font.Height;
 
             for (int i = 0; i < paletteSize; i++)
             {
@@ -102,10 +103,10 @@ namespace Image_Processing
                 Panel colorSquare = new Panel();
                 colorSquare.BackColor = Color.FromArgb(r, g, b);
                 colorSquare.Size = new Size(paletteWidth, paletteHeight);
-                colorSquare.Location = new Point(i % 16 * paletteWidth, i / 16 * paletteHeight);
+                colorSquare.Location = new Point(i % 16 * paletteWidth, startY + (i / 16 * paletteHeight));
 
                 // Add the color square to the palettePanel
-                pcxPalette.Controls.Add(colorSquare);
+                PCXheaderInfoBox.Controls.Add(colorSquare);
             }
         }
 
@@ -151,7 +152,7 @@ namespace Image_Processing
                     {
                         using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Open, FileAccess.Read))
                         {
-
+                            PCXheaderInfoBox.Clear();
 
                             pcxLabel.Text = "Original Image";
 
