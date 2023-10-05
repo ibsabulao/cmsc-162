@@ -29,6 +29,7 @@ namespace Image_Processing
                         // Load the image and display it in the PictureBox control
                         using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Open))
                         {
+                            PCXheaderInfoBox.Controls.Clear();
                             PCXheaderInfoBox.Clear();
 
                             ViewImage.Image = Image.FromStream(fileStream);
