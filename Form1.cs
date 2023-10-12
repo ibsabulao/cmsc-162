@@ -393,13 +393,13 @@ namespace Image_Processing
             }
         }
 
-        private void GammaTransform_Scroll(object sender, EventArgs e)
+        private void GammaTransform_Click(object sender, EventArgs e)
         {
             if (originalImage != null)
             {
                 showHistogram.Image = null; // remove image here also when using trackbar
                 Bitmap gamma_img = new Bitmap(originalImage.Width, originalImage.Height);
-                int gamma = gamma_trackbar.Value;
+                float gamma = float.Parse(gamma_textbox.Text);
 
                 for (int y = 0; y < originalImage.Height; y++)
                 {
@@ -416,6 +416,21 @@ namespace Image_Processing
                 }
 
                 imageChannel.Image = gamma_img;
+            }
+        }
+
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
+                (e.KeyChar != '.'))
+            {
+                e.Handled = true;
+            }
+
+            // only allow one decimal point
+            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+            {
+                e.Handled = true;
             }
         }
     }

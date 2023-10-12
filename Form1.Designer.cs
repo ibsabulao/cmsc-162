@@ -42,13 +42,14 @@ namespace Image_Processing
             tableLayoutPanel1 = new TableLayoutPanel();
             tableLayoutPanel2 = new TableLayoutPanel();
             panel3 = new Panel();
+            button3 = new Button();
+            gamma_textbox = new TextBox();
             label4 = new Label();
             label3 = new Label();
             label2 = new Label();
             label1 = new Label();
             bw_trackbar = new TrackBar();
             button4 = new Button();
-            gamma_trackbar = new TrackBar();
             PCXheaderInfoBox = new RichTextBox();
             panel2 = new Panel();
             button2 = new Button();
@@ -68,7 +69,6 @@ namespace Image_Processing
             tableLayoutPanel2.SuspendLayout();
             panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)bw_trackbar).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)gamma_trackbar).BeginInit();
             panel2.SuspendLayout();
             tableLayoutPanel3.SuspendLayout();
             tableLayoutPanel4.SuspendLayout();
@@ -183,19 +183,44 @@ namespace Image_Processing
             // 
             // panel3
             // 
+            panel3.Controls.Add(button3);
+            panel3.Controls.Add(gamma_textbox);
             panel3.Controls.Add(label4);
             panel3.Controls.Add(label3);
             panel3.Controls.Add(label2);
             panel3.Controls.Add(label1);
             panel3.Controls.Add(bw_trackbar);
             panel3.Controls.Add(button4);
-            panel3.Controls.Add(gamma_trackbar);
             panel3.Dock = DockStyle.Fill;
             panel3.Location = new Point(4, 147);
             panel3.Margin = new Padding(4, 5, 4, 5);
             panel3.Name = "panel3";
             panel3.Size = new Size(422, 220);
             panel3.TabIndex = 4;
+            // 
+            // button3
+            // 
+            button3.Anchor = AnchorStyles.None;
+            button3.AutoSize = true;
+            button3.BackColor = Color.DimGray;
+            button3.ForeColor = SystemColors.ButtonHighlight;
+            button3.Location = new Point(233, 167);
+            button3.Margin = new Padding(4, 5, 4, 5);
+            button3.Name = "button3";
+            button3.Size = new Size(162, 35);
+            button3.TabIndex = 11;
+            button3.Text = "Transform";
+            button3.UseVisualStyleBackColor = false;
+            button3.Click += GammaTransform_Click;
+            // 
+            // gamma_textbox
+            // 
+            gamma_textbox.Location = new Point(35, 169);
+            gamma_textbox.Name = "gamma_textbox";
+            gamma_textbox.Size = new Size(182, 31);
+            gamma_textbox.TabIndex = 19;
+            gamma_textbox.TabStop = false;
+            gamma_textbox.KeyPress += textBox1_KeyPress;
             // 
             // label4
             // 
@@ -223,11 +248,11 @@ namespace Image_Processing
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI", 7F, FontStyle.Regular, GraphicsUnit.Point);
             label2.ForeColor = SystemColors.ControlText;
-            label2.Location = new Point(24, 142);
+            label2.Location = new Point(24, 141);
             label2.Name = "label2";
-            label2.Size = new Size(161, 19);
+            label2.Size = new Size(155, 19);
             label2.TabIndex = 16;
-            label2.Text = "Adjust Gamma (𝛾) values";
+            label2.Text = "Input Gamma (𝛾) values";
             // 
             // label1
             // 
@@ -262,15 +287,6 @@ namespace Image_Processing
             button4.TabIndex = 12;
             button4.Text = "Gamma Transformation";
             button4.UseVisualStyleBackColor = false;
-            // 
-            // gamma_trackbar
-            // 
-            gamma_trackbar.LargeChange = 1;
-            gamma_trackbar.Location = new Point(24, 168);
-            gamma_trackbar.Name = "gamma_trackbar";
-            gamma_trackbar.Size = new Size(371, 69);
-            gamma_trackbar.TabIndex = 14;
-            gamma_trackbar.ValueChanged += GammaTransform_Scroll;
             // 
             // PCXheaderInfoBox
             // 
@@ -481,7 +497,6 @@ namespace Image_Processing
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)bw_trackbar).EndInit();
-            ((System.ComponentModel.ISupportInitialize)gamma_trackbar).EndInit();
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
             tableLayoutPanel3.ResumeLayout(false);
@@ -528,8 +543,9 @@ namespace Image_Processing
         private TrackBar bw_trackbar;
         private Label label1;
         private Label label2;
-        private TrackBar gamma_trackbar;
         private Label label3;
         private Label label4;
+        private Button button3;
+        private TextBox gamma_textbox;
     }
 }
