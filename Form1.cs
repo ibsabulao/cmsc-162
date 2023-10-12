@@ -3,6 +3,8 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using static System.Net.Mime.MediaTypeNames;
+using System.Diagnostics.Metrics;
 
 namespace Image_Processing
 {
@@ -12,6 +14,13 @@ namespace Image_Processing
         private Bitmap? redChannelImage;
         private Bitmap? greenChannelImage;
         private Bitmap? blueChannelImage;
+
+        private PictureBox? histogramPictureBox;
+
+        private int maxFrequencyIntensity; // Declare the variable outside the method
+
+        // Create a new form to display the histogram
+        Form histogramForm = new Form();
         public Form1()
         {
             InitializeComponent();
@@ -30,6 +39,8 @@ namespace Image_Processing
 
                     try
                     {
+                        PCXheaderInfoBox.Controls.Clear();
+                        PCXheaderInfoBox.Clear();
                         originalImage = new Bitmap(selectedFilePath);
                         ViewImage.Image = originalImage;
 
@@ -149,12 +160,14 @@ namespace Image_Processing
                 {
                     string selectedFilePath = openFileDialog_1.FileName;
 
+                    // Set the channelImage to null
+                    Bitmap channelImage = null;
+
                     try
                     {
                         using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Open, FileAccess.Read))
                         {
                             PCXheaderInfoBox.Clear();
-
                             originalImageLabel.Text = "Original PCX Image";
 
                             // header
@@ -213,8 +226,12 @@ namespace Image_Processing
             if (originalImage != null)
             {
                 redChannelImage = SplitChannel(originalImage, ColorChannel.Red);
+                channelLabel.Text = "Red Channel";
+                histogramForm.Text = "Red Channel Histogram";
                 imageChannel.Image = redChannelImage;
-                ShowHistogram(redChannelImage, showHistogram);
+
+                // Call the modified ShowHistogram method and get the histogram colors
+                Color[] histogramColors = ShowHistogram(redChannelImage);
             }
         }
 
@@ -223,8 +240,12 @@ namespace Image_Processing
             if (originalImage != null)
             {
                 greenChannelImage = SplitChannel(originalImage, ColorChannel.Green);
+                channelLabel.Text = "Green Channel";
+                histogramForm.Text = "Green Channel Histogram";
                 imageChannel.Image = greenChannelImage;
-                ShowHistogram(greenChannelImage, showHistogram);
+
+                // Call the modified ShowHistogram method and get the histogram colors
+                Color[] histogramColors = ShowHistogram(greenChannelImage);
             }
         }
 
@@ -232,9 +253,15 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
+                // Clear the existing histogram
+                showHistogram.Image = null;
+
                 blueChannelImage = SplitChannel(originalImage, ColorChannel.Blue);
+                channelLabel.Text = "Blue Channel";
                 imageChannel.Image = blueChannelImage;
-                ShowHistogram(blueChannelImage, showHistogram);
+
+                // Call the modified ShowHistogram method and get the histogram colors
+                Color[] histogramColors = ShowHistogram(blueChannelImage);
             }
         }
 
@@ -259,64 +286,126 @@ namespace Image_Processing
             return channelImage;
         }
 
-        private void ShowHistogram(Bitmap channelImage, PictureBox histogramPictureBox)
+        private Color[] ShowHistogram(Bitmap channelImage)
         {
+            Size pictureBoxSize = new Size(600, 600); // Set the desired PictureBox size
+
             // Ensure the channelImage is not null
             if (channelImage == null)
             {
-                return;
+                return new Color[256]; // Return an empty color array
             }
 
             // Initialize an array to store the histogram data for each intensity level
             int[] histogram = new int[256];
+            float max = 0;
+            int maxFrequencyIntensity = -1;
 
-            // Iterate through each pixel in the channelImage and update the histogram
+            // Iterate through each pixel in the image and update the histogram
             for (int x = 0; x < channelImage.Width; x++)
             {
                 for (int y = 0; y < channelImage.Height; y++)
                 {
                     Color pixel = channelImage.GetPixel(x, y);
-                    int intensity = (int)(0.299 * pixel.R + 0.587 * pixel.G + 0.114 * pixel.B);
-                    histogram[intensity]++;
+                    int value = channelImage == redChannelImage ? pixel.R :
+                                channelImage == greenChannelImage ? pixel.G : pixel.B;
+
+                    histogram[value]++;
+                    if (max < histogram[value])
+                    {
+                        max = histogram[value];
+                        maxFrequencyIntensity = value;
+                    }
                 }
             }
 
             // Find the maximum count in the histogram for scaling
             int maxCount = histogram.Max();
+            int histWidth = 550; // Set the width of the histogram
+            int histHeight = 350; // Set the height of the histogram
 
-            // Create a new bitmap to display the histogram
-            Bitmap histogramBitmap = new Bitmap(256, histogramPictureBox.Height);
+            Color[] histogramColors = new Color[256];
+
+            using (Bitmap histogramBitmap = new Bitmap(histWidth, histHeight))
             using (Graphics g = Graphics.FromImage(histogramBitmap))
             {
                 g.Clear(Color.White);
 
-                // Calculate the scaling factor for the histogram bars
-                float scalingFactor = (float)histogramPictureBox.Height / maxCount;
-
-                // Draw the histogram bars
-                for (int i = 0; i < 256; i++)
+                for (int i = 0; i < histogram.Length; i++)
                 {
-                    int barHeight = (int)(histogram[i] * scalingFactor);
-                    g.DrawLine(Pens.Black, i, histogramPictureBox.Height, i, histogramPictureBox.Height - barHeight);
+                    float pct = histogram[i] / max; // Calculate the percentage of the max pixel count
+
+                    // Calculate the height of the bar based on the percentage
+                    int barHeight = (int)(pct * histHeight);
+
+                    // Calculate vertical position for bars
+                    int barY = histHeight - barHeight;
+
+                    // Draw the histogram bar for the channel
+                    Color channelColor = channelImage == redChannelImage ? Color.Pink :
+                                         channelImage == greenChannelImage ? Color.LightGreen : Color.LightBlue ;
+
+                    g.FillRectangle(new SolidBrush(channelColor),
+                        new Rectangle(i * (histWidth / 256), barY, histWidth / 256, barHeight)
+                    );
+
+                    histogramColors[i] = channelColor;
                 }
 
-                // Add vertical lines every 50 intensity levels
+                // Add vertical lines every 50 intensity levels and display intensity values
                 for (int i = 50; i < 256; i += 50)
                 {
-                    g.DrawLine(Pens.Red, i, 0, i, histogramPictureBox.Height);
-                    g.DrawString(i.ToString(), new Font("Arial", 8), Brushes.Red, i, 0);
+                    int x = i * (histWidth / 256);
+                    g.DrawLine(Pens.Black, x, 0, x, histHeight);
+                    g.DrawString(i.ToString(), new Font("Arial", 8), Brushes.Black, x, histHeight - 20);
                 }
 
                 // Add horizontal lines every 200 pixels
                 for (int i = 200; i < maxCount; i += 200)
                 {
-                    g.DrawLine(Pens.Blue, 0, histogramPictureBox.Height - i, 256, histogramPictureBox.Height - i);
-                    g.DrawString(i.ToString(), new Font("Arial", 8), Brushes.Blue, 0, histogramPictureBox.Height - i);
+                    int y = histHeight - (int)((i / (float)maxCount) * histHeight);
+                    g.DrawLine(Pens.Black, 0, y, histWidth, y);
+                    g.DrawString(i.ToString(), new Font("Arial", 8), Brushes.Black, 5, y + 5);
                 }
+
+                histogramForm.Text = channelImage == redChannelImage ? "Red Channel Histogram" :
+                                    channelImage == greenChannelImage ? "Green Channel Histogram" : "Blue Channel Histogram";
+                histogramForm.Size = pictureBoxSize;
+
+                // Create the PictureBox for the histogram if it's not already created
+                if (histogramPictureBox == null)
+                {
+                    histogramPictureBox = new PictureBox();
+                    histogramPictureBox.SizeMode = PictureBoxSizeMode.CenterImage;
+                    histogramPictureBox.Dock = DockStyle.Fill;
+
+                    // Calculate the location to center the PictureBox
+                    int pictureBoxX = (histogramForm.Width - histogramPictureBox.Width) / 2;
+                    int pictureBoxY = (histogramForm.Height - histogramPictureBox.Height) / 2;
+                    histogramPictureBox.Location = new Point(pictureBoxX, pictureBoxY);
+
+                    // Add the PictureBox to the form
+                    histogramForm.Controls.Add(histogramPictureBox);
+                }
+
+                // Clear the existing image
+                if (histogramPictureBox.Image != null)
+                {
+                    histogramPictureBox.Image.Dispose();
+                    histogramPictureBox.Image = null;
+                }
+
+                // Set the Image property if histogramPictureBox is not null
+                if (histogramPictureBox != null)
+                {
+                    histogramPictureBox.Image = histogramBitmap;
+                }
+
+                // Show the form as a dialog
+                histogramForm.ShowDialog();
             }
 
-            // Display the histogram in the PictureBox
-            histogramPictureBox.Image = histogramBitmap;
+            return histogramColors;
         }
 
         private enum ColorChannel

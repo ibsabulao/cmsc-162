@@ -48,21 +48,27 @@ namespace Image_Processing
             Blue = new Button();
             tableLayoutPanel3 = new TableLayoutPanel();
             tableLayoutPanel4 = new TableLayoutPanel();
+            panel3 = new Panel();
+            channelLabel = new Label();
             imageChannel = new PictureBox();
-            showHistogram = new PictureBox();
             panel1 = new Panel();
             originalImageLabel = new Label();
             ViewImage = new PictureBox();
+            showHistogram = new PictureBox();
+            histogramLabel = new Label();
+            panel4 = new Panel();
             menuStrip1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
             panel2.SuspendLayout();
             tableLayoutPanel3.SuspendLayout();
             tableLayoutPanel4.SuspendLayout();
+            panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)imageChannel).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)showHistogram).BeginInit();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ViewImage).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)showHistogram).BeginInit();
+            panel4.SuspendLayout();
             SuspendLayout();
             // 
             // menuStrip1
@@ -254,8 +260,8 @@ namespace Image_Processing
             tableLayoutPanel4.ColumnCount = 2;
             tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel4.Controls.Add(imageChannel, 0, 0);
-            tableLayoutPanel4.Controls.Add(showHistogram, 1, 0);
+            tableLayoutPanel4.Controls.Add(panel4, 1, 0);
+            tableLayoutPanel4.Controls.Add(panel3, 0, 0);
             tableLayoutPanel4.Location = new Point(3, 3);
             tableLayoutPanel4.Name = "tableLayoutPanel4";
             tableLayoutPanel4.RowCount = 1;
@@ -263,23 +269,31 @@ namespace Image_Processing
             tableLayoutPanel4.Size = new Size(613, 249);
             tableLayoutPanel4.TabIndex = 0;
             // 
+            // panel3
+            // 
+            panel3.Controls.Add(channelLabel);
+            panel3.Controls.Add(imageChannel);
+            panel3.Location = new Point(3, 3);
+            panel3.Name = "panel3";
+            panel3.Size = new Size(300, 243);
+            panel3.TabIndex = 2;
+            // 
+            // channelLabel
+            // 
+            channelLabel.AutoSize = true;
+            channelLabel.Location = new Point(3, 3);
+            channelLabel.Name = "channelLabel";
+            channelLabel.Size = new Size(0, 15);
+            channelLabel.TabIndex = 1;
+            // 
             // imageChannel
             // 
-            imageChannel.Location = new Point(3, 3);
+            imageChannel.Location = new Point(0, 21);
             imageChannel.Name = "imageChannel";
-            imageChannel.Size = new Size(300, 243);
+            imageChannel.Size = new Size(300, 222);
             imageChannel.SizeMode = PictureBoxSizeMode.Zoom;
             imageChannel.TabIndex = 0;
             imageChannel.TabStop = false;
-            // 
-            // showHistogram
-            // 
-            showHistogram.Location = new Point(309, 3);
-            showHistogram.Name = "showHistogram";
-            showHistogram.Size = new Size(301, 243);
-            showHistogram.SizeMode = PictureBoxSizeMode.AutoSize;
-            showHistogram.TabIndex = 1;
-            showHistogram.TabStop = false;
             // 
             // panel1
             // 
@@ -311,6 +325,15 @@ namespace Image_Processing
             ViewImage.TabIndex = 1;
             ViewImage.TabStop = false;
             // 
+            // panel4
+            // 
+            panel4.Controls.Add(histogramLabel);
+            panel4.Controls.Add(showHistogram);
+            panel4.Location = new Point(309, 3);
+            panel4.Name = "panel4";
+            panel4.Size = new Size(300, 243);
+            panel4.TabIndex = 3;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -326,7 +349,6 @@ namespace Image_Processing
             SizeGripStyle = SizeGripStyle.Hide;
             StartPosition = FormStartPosition.WindowsDefaultBounds;
             Text = "View";
-            WindowState = FormWindowState.Maximized;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
             tableLayoutPanel1.ResumeLayout(false);
@@ -335,12 +357,15 @@ namespace Image_Processing
             panel2.PerformLayout();
             tableLayoutPanel3.ResumeLayout(false);
             tableLayoutPanel4.ResumeLayout(false);
-            tableLayoutPanel4.PerformLayout();
+            panel3.ResumeLayout(false);
+            panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)imageChannel).EndInit();
-            ((System.ComponentModel.ISupportInitialize)showHistogram).EndInit();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)ViewImage).EndInit();
+            ((System.ComponentModel.ISupportInitialize)showHistogram).EndInit();
+            panel4.ResumeLayout(false);
+            panel4.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -363,12 +388,16 @@ namespace Image_Processing
         private TableLayoutPanel tableLayoutPanel3;
         private TableLayoutPanel tableLayoutPanel4;
         private PictureBox imageChannel;
-        private PictureBox showHistogram;
         private Panel panel2;
         private Button Red;
         private Button Green;
         private Button Blue;
         private Panel panel1;
         private Label originalImageLabel;
+        private Panel panel3;
+        private Label channelLabel;
+        private Panel panel4;
+        private Label histogramLabel;
+        private PictureBox showHistogram;
     }
 }
