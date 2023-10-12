@@ -33,6 +33,7 @@ namespace Image_Processing
                     {
                         originalImage = new Bitmap(selectedFilePath);
                         ViewImage.Image = originalImage;
+                        imageChannel.Image = null; // empty if there's previously uploaded img
 
                         originalImageLabel.Text = "Original Image";
                     }
@@ -173,7 +174,7 @@ namespace Image_Processing
                             int width = header[8] + (header[9] << 8) + 1;
                             int height = header[10] + (header[11] << 8) + 1;
 
-                            Bitmap bmp = new Bitmap(width, height);
+                            originalImage = new Bitmap(width, height);
 
                             // Read the RLE-encoded pixel data
                             int pixelDataSize = width * height * (header[3] / 8);
@@ -192,12 +193,13 @@ namespace Image_Processing
                                 {
                                     int colorIndex = decompressedData[index++];
                                     Color pixelColor = Color.FromArgb(paletteData[colorIndex * 3], paletteData[colorIndex * 3 + 1], paletteData[colorIndex * 3 + 2]);
-                                    bmp.SetPixel(x, y, pixelColor);
+                                    originalImage.SetPixel(x, y, pixelColor);
                                 }
                             }
 
                             // Display the PCX image in the PictureBox control
-                            ViewImage.Image = bmp;
+                            ViewImage.Image = originalImage;
+                            imageChannel.Image = null; // empty if there's previously uploaded img
                         }
                     }
 
@@ -331,13 +333,14 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
-                Bitmap grayscaleImage = new Bitmap(originalImage.Width, originalImage.Height);
+                Bitmap sourceImage = originalImage;
+                Bitmap grayscaleImage = new Bitmap(sourceImage.Width, sourceImage.Height);
 
-                for (int x = 0; x < originalImage.Width; x++)
+                for (int x = 0; x < sourceImage.Width; x++)
                 {
-                    for (int y = 0; y < originalImage.Height; y++)
+                    for (int y = 0; y < sourceImage.Height; y++)
                     {
-                        Color pixel = originalImage.GetPixel(x, y);
+                        Color pixel = sourceImage.GetPixel(x, y);
                         int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B);
                         grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue));
                     }
@@ -352,13 +355,14 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
-                Bitmap negativeImage = new Bitmap(originalImage.Width, originalImage.Height);
+                Bitmap sourceImage = originalImage;
+                Bitmap negativeImage = new Bitmap(sourceImage.Width, sourceImage.Height);
 
-                for (int x = 0; x < originalImage.Width; x++)
+                for (int x = 0; x < sourceImage.Width; x++)
                 {
-                    for (int y = 0; y < originalImage.Height; y++)
+                    for (int y = 0; y < sourceImage.Height; y++)
                     {
-                        Color pixel = originalImage.GetPixel(x, y);
+                        Color pixel = sourceImage.GetPixel(x, y);
                         Color negativePixel = Color.FromArgb(255 - pixel.R, 255 - pixel.G, 255 - pixel.B);
                         negativeImage.SetPixel(x, y, negativePixel);
                     }
@@ -373,15 +377,15 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
-                showHistogram.Image = null; // remove histogram img when using trackbar
-                Bitmap bw_image = new Bitmap(originalImage.Width, originalImage.Height);
+                Bitmap sourceImage = originalImage;
+                Bitmap bw_image = new Bitmap(sourceImage.Width, sourceImage.Height);
                 int threshold = bw_trackbar.Value;
 
-                for (int y = 0; y < originalImage.Height; y++)
+                for (int y = 0; y < sourceImage.Height; y++)
                 {
-                    for (int x = 0; x < originalImage.Width; x++)
+                    for (int x = 0; x < sourceImage.Width; x++)
                     {
-                        Color pixel = originalImage.GetPixel(x, y);
+                        Color pixel = sourceImage.GetPixel(x, y);
                         int average = (pixel.R + pixel.G + pixel.B) / 3;
 
                         Color bwColor = (average >= threshold) ? Color.White : Color.Black;
@@ -395,23 +399,23 @@ namespace Image_Processing
 
         private void GammaTransform_Click(object sender, EventArgs e)
         {
-            if (originalImage != null)
+            if (originalImage != null && !string.IsNullOrEmpty(gamma_textbox.Text))
             {
-                showHistogram.Image = null; // remove image here also when using trackbar
-                Bitmap gamma_img = new Bitmap(originalImage.Width, originalImage.Height);
+                Bitmap sourceImage = originalImage;
+                Bitmap gamma_img = new Bitmap(sourceImage.Width, sourceImage.Height);
                 float gamma = float.Parse(gamma_textbox.Text);
 
-                for (int y = 0; y < originalImage.Height; y++)
+                for (int x = 0; x < sourceImage.Width; x++)
                 {
-                    for (int x = 0; x < originalImage.Width; x++)
+                    for (int y = 0; y < sourceImage.Height; y++)
                     {
-                        Color pixel = originalImage.GetPixel(x, y);
-                        double red = Math.Pow(pixel.R / 255.0, gamma) * 255.0;
-                        double green = Math.Pow(pixel.G / 255.0, gamma) * 255.0;
-                        double blue = Math.Pow(pixel.B / 255.0, gamma) * 255.0;
+                        Color pixel = sourceImage.GetPixel(x, y);
 
-                        Color gammaColor = Color.FromArgb((int)red, (int)green, (int)blue);
-                        gamma_img.SetPixel(x, y, gammaColor);
+                        int gray = (int)(0.299 * pixel.R + 0.587 * pixel.G + 0.114 * pixel.B);
+                        int newGray = (int)(Math.Pow(gray / 255.0, gamma) * 255);
+
+                        Color newPixel = Color.FromArgb(newGray, newGray, newGray);
+                        gamma_img.SetPixel(x, y, newPixel);
                     }
                 }
 
