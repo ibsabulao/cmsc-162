@@ -3,11 +3,16 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Image_Processing
 {
     public partial class Form1 : Form
     {
+        private Bitmap? originalImage;
+        private Bitmap? redChannelImage;
+        private Bitmap? greenChannelImage;
+        private Bitmap? blueChannelImage;
         public Form1()
         {
             InitializeComponent();
@@ -17,7 +22,7 @@ namespace Image_Processing
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.ico;*.tiff|All Files|*.*";
+                openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.ico;*.tiff;*.jfif|All Files|*.*";
                 openFileDialog.FilterIndex = 1;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -26,14 +31,11 @@ namespace Image_Processing
 
                     try
                     {
-                        // Load the image and display it in the PictureBox control
-                        using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Open))
-                        {
-                            PCXheaderInfoBox.Controls.Clear();
-                            PCXheaderInfoBox.Clear();
+                        originalImage = new Bitmap(selectedFilePath);
+                        ViewImage.Image = originalImage;
+                        imageChannel.Image = null; // empty if there's previously uploaded img
 
-                            ViewImage.Image = Image.FromStream(fileStream);
-                        }
+                        originalImageLabel.Text = "Original Image";
                     }
                     catch (Exception ex)
                     {
@@ -155,7 +157,7 @@ namespace Image_Processing
                         {
                             PCXheaderInfoBox.Clear();
 
-                            pcxLabel.Text = "Original Image";
+                            originalImageLabel.Text = "Original PCX Image";
 
                             // header
                             byte[] header = new byte[128];
@@ -172,7 +174,7 @@ namespace Image_Processing
                             int width = header[8] + (header[9] << 8) + 1;
                             int height = header[10] + (header[11] << 8) + 1;
 
-                            Bitmap bmp = new Bitmap(width, height);
+                            originalImage = new Bitmap(width, height);
 
                             // Read the RLE-encoded pixel data
                             int pixelDataSize = width * height * (header[3] / 8);
@@ -191,12 +193,13 @@ namespace Image_Processing
                                 {
                                     int colorIndex = decompressedData[index++];
                                     Color pixelColor = Color.FromArgb(paletteData[colorIndex * 3], paletteData[colorIndex * 3 + 1], paletteData[colorIndex * 3 + 2]);
-                                    bmp.SetPixel(x, y, pixelColor);
+                                    originalImage.SetPixel(x, y, pixelColor);
                                 }
                             }
 
                             // Display the PCX image in the PictureBox control
-                            ViewImage.Image = bmp;
+                            ViewImage.Image = originalImage;
+                            imageChannel.Image = null; // empty if there's previously uploaded img
                         }
                     }
 
@@ -205,6 +208,233 @@ namespace Image_Processing
                         MessageBox.Show($"Error loading the file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
+            }
+        }
+
+        private void Red_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                redChannelImage = SplitChannel(originalImage, ColorChannel.Red);
+                imageChannel.Image = redChannelImage;
+                ShowHistogram(redChannelImage, showHistogram);
+            }
+        }
+
+        private void Green_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                greenChannelImage = SplitChannel(originalImage, ColorChannel.Green);
+                imageChannel.Image = greenChannelImage;
+                ShowHistogram(greenChannelImage, showHistogram);
+            }
+        }
+
+        private void Blue_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                blueChannelImage = SplitChannel(originalImage, ColorChannel.Blue);
+                imageChannel.Image = blueChannelImage;
+                ShowHistogram(blueChannelImage, showHistogram);
+            }
+        }
+
+        private Bitmap SplitChannel(Bitmap sourceImage, ColorChannel channel)
+        {
+            Bitmap channelImage = new Bitmap(sourceImage.Width, sourceImage.Height);
+
+            for (int x = 0; x < sourceImage.Width; x++)
+            {
+                for (int y = 0; y < sourceImage.Height; y++)
+                {
+                    Color pixel = sourceImage.GetPixel(x, y);
+                    Color newPixel = Color.FromArgb(
+                        channel == ColorChannel.Red ? pixel.R : 0,
+                        channel == ColorChannel.Green ? pixel.G : 0,
+                        channel == ColorChannel.Blue ? pixel.B : 0
+                    );
+                    channelImage.SetPixel(x, y, newPixel);
+                }
+            }
+
+            return channelImage;
+        }
+
+        private void ShowHistogram(Bitmap channelImage, PictureBox histogramPictureBox)
+        {
+            // Ensure the channelImage is not null
+            if (channelImage == null)
+            {
+                return;
+            }
+
+            // Initialize an array to store the histogram data for each intensity level
+            int[] histogram = new int[256];
+
+            // Iterate through each pixel in the channelImage and update the histogram
+            for (int x = 0; x < channelImage.Width; x++)
+            {
+                for (int y = 0; y < channelImage.Height; y++)
+                {
+                    Color pixel = channelImage.GetPixel(x, y);
+                    int intensity = (int)(0.299 * pixel.R + 0.587 * pixel.G + 0.114 * pixel.B);
+                    histogram[intensity]++;
+                }
+            }
+
+            // Find the maximum count in the histogram for scaling
+            int maxCount = histogram.Max();
+
+            // Create a new bitmap to display the histogram
+            Bitmap histogramBitmap = new Bitmap(256, histogramPictureBox.Height);
+            using (Graphics g = Graphics.FromImage(histogramBitmap))
+            {
+                g.Clear(Color.White);
+
+                // Calculate the scaling factor for the histogram bars
+                float scalingFactor = (float)histogramPictureBox.Height / maxCount;
+
+                // Draw the histogram bars
+                for (int i = 0; i < 256; i++)
+                {
+                    int barHeight = (int)(histogram[i] * scalingFactor);
+                    g.DrawLine(Pens.Black, i, histogramPictureBox.Height, i, histogramPictureBox.Height - barHeight);
+                }
+
+                // Add vertical lines every 50 intensity levels
+                for (int i = 50; i < 256; i += 50)
+                {
+                    g.DrawLine(Pens.Red, i, 0, i, histogramPictureBox.Height);
+                    g.DrawString(i.ToString(), new Font("Arial", 8), Brushes.Red, i, 0);
+                }
+
+                // Add horizontal lines every 200 pixels
+                for (int i = 200; i < maxCount; i += 200)
+                {
+                    g.DrawLine(Pens.Blue, 0, histogramPictureBox.Height - i, 256, histogramPictureBox.Height - i);
+                    g.DrawString(i.ToString(), new Font("Arial", 8), Brushes.Blue, 0, histogramPictureBox.Height - i);
+                }
+            }
+
+            // Display the histogram in the PictureBox
+            histogramPictureBox.Image = histogramBitmap;
+        }
+
+        private enum ColorChannel
+        {
+            Red,
+            Green,
+            Blue
+        }
+
+        private void Grayscale_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                Bitmap sourceImage = originalImage;
+                Bitmap grayscaleImage = new Bitmap(sourceImage.Width, sourceImage.Height);
+
+                for (int x = 0; x < sourceImage.Width; x++)
+                {
+                    for (int y = 0; y < sourceImage.Height; y++)
+                    {
+                        Color pixel = sourceImage.GetPixel(x, y);
+                        int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B);
+                        grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue));
+                    }
+                }
+
+                imageChannel.Image = grayscaleImage;
+
+            }
+        }
+
+        private void Negative_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                Bitmap sourceImage = originalImage;
+                Bitmap negativeImage = new Bitmap(sourceImage.Width, sourceImage.Height);
+
+                for (int x = 0; x < sourceImage.Width; x++)
+                {
+                    for (int y = 0; y < sourceImage.Height; y++)
+                    {
+                        Color pixel = sourceImage.GetPixel(x, y);
+                        Color negativePixel = Color.FromArgb(255 - pixel.R, 255 - pixel.G, 255 - pixel.B);
+                        negativeImage.SetPixel(x, y, negativePixel);
+                    }
+                }
+
+                imageChannel.Image = negativeImage;
+
+            }
+        }
+
+        private void BW_Scroll(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                Bitmap sourceImage = originalImage;
+                Bitmap bw_image = new Bitmap(sourceImage.Width, sourceImage.Height);
+                int threshold = bw_trackbar.Value;
+
+                for (int y = 0; y < sourceImage.Height; y++)
+                {
+                    for (int x = 0; x < sourceImage.Width; x++)
+                    {
+                        Color pixel = sourceImage.GetPixel(x, y);
+                        int average = (pixel.R + pixel.G + pixel.B) / 3;
+
+                        Color bwColor = (average >= threshold) ? Color.White : Color.Black;
+                        bw_image.SetPixel(x, y, bwColor);
+                    }
+                }
+
+                imageChannel.Image = bw_image;
+            }
+        }
+
+        private void GammaTransform_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null && !string.IsNullOrEmpty(gamma_textbox.Text))
+            {
+                Bitmap sourceImage = originalImage;
+                Bitmap gamma_img = new Bitmap(sourceImage.Width, sourceImage.Height);
+                float gamma = float.Parse(gamma_textbox.Text);
+
+                for (int x = 0; x < sourceImage.Width; x++)
+                {
+                    for (int y = 0; y < sourceImage.Height; y++)
+                    {
+                        Color pixel = sourceImage.GetPixel(x, y);
+
+                        int gray = (int)(0.299 * pixel.R + 0.587 * pixel.G + 0.114 * pixel.B);
+                        int newGray = (int)(Math.Pow(gray / 255.0, gamma) * 255);
+
+                        Color newPixel = Color.FromArgb(newGray, newGray, newGray);
+                        gamma_img.SetPixel(x, y, newPixel);
+                    }
+                }
+
+                imageChannel.Image = gamma_img;
+            }
+        }
+
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
+                (e.KeyChar != '.'))
+            {
+                e.Handled = true;
+            }
+
+            // only allow one decimal point
+            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+            {
+                e.Handled = true;
             }
         }
     }
