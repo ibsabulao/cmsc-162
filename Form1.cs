@@ -8,6 +8,10 @@ namespace Image_Processing
 {
     public partial class Form1 : Form
     {
+        private Bitmap? originalImage;
+        private Bitmap? redChannelImage;
+        private Bitmap? greenChannelImage;
+        private Bitmap? blueChannelImage;
         public Form1()
         {
             InitializeComponent();
@@ -17,7 +21,7 @@ namespace Image_Processing
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.ico;*.tiff|All Files|*.*";
+                openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.ico;*.tiff;*.jfif|All Files|*.*";
                 openFileDialog.FilterIndex = 1;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -26,14 +30,10 @@ namespace Image_Processing
 
                     try
                     {
-                        // Load the image and display it in the PictureBox control
-                        using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Open))
-                        {
-                            PCXheaderInfoBox.Controls.Clear();
-                            PCXheaderInfoBox.Clear();
+                        originalImage = new Bitmap(selectedFilePath);
+                        ViewImage.Image = originalImage;
 
-                            ViewImage.Image = Image.FromStream(fileStream);
-                        }
+                        originalImageLabel.Text = "Original Image";
                     }
                     catch (Exception ex)
                     {
@@ -155,7 +155,7 @@ namespace Image_Processing
                         {
                             PCXheaderInfoBox.Clear();
 
-                            pcxLabel.Text = "Original Image";
+                            originalImageLabel.Text = "Original PCX Image";
 
                             // header
                             byte[] header = new byte[128];
@@ -206,6 +206,124 @@ namespace Image_Processing
                     }
                 }
             }
+        }
+
+        private void Red_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                redChannelImage = SplitChannel(originalImage, ColorChannel.Red);
+                imageChannel.Image = redChannelImage;
+                ShowHistogram(redChannelImage, showHistogram);
+            }
+        }
+
+        private void Green_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                greenChannelImage = SplitChannel(originalImage, ColorChannel.Green);
+                imageChannel.Image = greenChannelImage;
+                ShowHistogram(greenChannelImage, showHistogram);
+            }
+        }
+
+        private void Blue_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                blueChannelImage = SplitChannel(originalImage, ColorChannel.Blue);
+                imageChannel.Image = blueChannelImage;
+                ShowHistogram(blueChannelImage, showHistogram);
+            }
+        }
+
+        private Bitmap SplitChannel(Bitmap sourceImage, ColorChannel channel)
+        {
+            Bitmap channelImage = new Bitmap(sourceImage.Width, sourceImage.Height);
+
+            for (int x = 0; x < sourceImage.Width; x++)
+            {
+                for (int y = 0; y < sourceImage.Height; y++)
+                {
+                    Color pixel = sourceImage.GetPixel(x, y);
+                    Color newPixel = Color.FromArgb(
+                        channel == ColorChannel.Red ? pixel.R : 0,
+                        channel == ColorChannel.Green ? pixel.G : 0,
+                        channel == ColorChannel.Blue ? pixel.B : 0
+                    );
+                    channelImage.SetPixel(x, y, newPixel);
+                }
+            }
+
+            return channelImage;
+        }
+
+        private void ShowHistogram(Bitmap channelImage, PictureBox histogramPictureBox)
+        {
+            // Ensure the channelImage is not null
+            if (channelImage == null)
+            {
+                return;
+            }
+
+            // Initialize an array to store the histogram data for each intensity level
+            int[] histogram = new int[256];
+
+            // Iterate through each pixel in the channelImage and update the histogram
+            for (int x = 0; x < channelImage.Width; x++)
+            {
+                for (int y = 0; y < channelImage.Height; y++)
+                {
+                    Color pixel = channelImage.GetPixel(x, y);
+                    int intensity = (int)(0.299 * pixel.R + 0.587 * pixel.G + 0.114 * pixel.B);
+                    histogram[intensity]++;
+                }
+            }
+
+            // Find the maximum count in the histogram for scaling
+            int maxCount = histogram.Max();
+
+            // Create a new bitmap to display the histogram
+            Bitmap histogramBitmap = new Bitmap(256, histogramPictureBox.Height);
+            using (Graphics g = Graphics.FromImage(histogramBitmap))
+            {
+                g.Clear(Color.White);
+
+                // Calculate the scaling factor for the histogram bars
+                float scalingFactor = (float)histogramPictureBox.Height / maxCount;
+
+                // Draw the histogram bars
+                for (int i = 0; i < 256; i++)
+                {
+                    int barHeight = (int)(histogram[i] * scalingFactor);
+                    g.DrawLine(Pens.Black, i, histogramPictureBox.Height, i, histogramPictureBox.Height - barHeight);
+                }
+
+                // Add vertical lines every 50 intensity levels
+                for (int i = 50; i < 256; i += 50)
+                {
+                    g.DrawLine(Pens.Red, i, 0, i, histogramPictureBox.Height);
+                    g.DrawString(i.ToString(), new Font("Arial", 8), Brushes.Red, i, 0);
+                }
+
+                // Add horizontal lines every 200 pixels
+                for (int i = 200; i < maxCount; i += 200)
+                {
+                    g.DrawLine(Pens.Blue, 0, histogramPictureBox.Height - i, 256, histogramPictureBox.Height - i);
+                    g.DrawString(i.ToString(), new Font("Arial", 8), Brushes.Blue, 0, histogramPictureBox.Height - i);
+                }
+            }
+
+            // Display the histogram in the PictureBox
+            histogramPictureBox.Image = histogramBitmap;
+        }
+
+        private enum ColorChannel
+        {
+            Red,
+            Green,
+            Blue
         }
     }
 }
