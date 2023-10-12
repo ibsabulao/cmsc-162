@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Image_Processing
 {
@@ -324,6 +325,98 @@ namespace Image_Processing
             Red,
             Green,
             Blue
+        }
+
+        private void Grayscale_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                Bitmap grayscaleImage = new Bitmap(originalImage.Width, originalImage.Height);
+
+                for (int x = 0; x < originalImage.Width; x++)
+                {
+                    for (int y = 0; y < originalImage.Height; y++)
+                    {
+                        Color pixel = originalImage.GetPixel(x, y);
+                        int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B);
+                        grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue));
+                    }
+                }
+
+                imageChannel.Image = grayscaleImage;
+
+            }
+        }
+
+        private void Negative_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                Bitmap negativeImage = new Bitmap(originalImage.Width, originalImage.Height);
+
+                for (int x = 0; x < originalImage.Width; x++)
+                {
+                    for (int y = 0; y < originalImage.Height; y++)
+                    {
+                        Color pixel = originalImage.GetPixel(x, y);
+                        Color negativePixel = Color.FromArgb(255 - pixel.R, 255 - pixel.G, 255 - pixel.B);
+                        negativeImage.SetPixel(x, y, negativePixel);
+                    }
+                }
+
+                imageChannel.Image = negativeImage;
+
+            }
+        }
+
+        private void BW_Scroll(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                showHistogram.Image = null; // remove histogram img when using trackbar
+                Bitmap bw_image = new Bitmap(originalImage.Width, originalImage.Height);
+                int threshold = bw_trackbar.Value;
+
+                for (int y = 0; y < originalImage.Height; y++)
+                {
+                    for (int x = 0; x < originalImage.Width; x++)
+                    {
+                        Color pixel = originalImage.GetPixel(x, y);
+                        int average = (pixel.R + pixel.G + pixel.B) / 3;
+
+                        Color bwColor = (average >= threshold) ? Color.White : Color.Black;
+                        bw_image.SetPixel(x, y, bwColor);
+                    }
+                }
+
+                imageChannel.Image = bw_image;
+            }
+        }
+
+        private void GammaTransform_Scroll(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                showHistogram.Image = null; // remove image here also when using trackbar
+                Bitmap gamma_img = new Bitmap(originalImage.Width, originalImage.Height);
+                int gamma = gamma_trackbar.Value;
+
+                for (int y = 0; y < originalImage.Height; y++)
+                {
+                    for (int x = 0; x < originalImage.Width; x++)
+                    {
+                        Color pixel = originalImage.GetPixel(x, y);
+                        double red = Math.Pow(pixel.R / 255.0, gamma) * 255.0;
+                        double green = Math.Pow(pixel.G / 255.0, gamma) * 255.0;
+                        double blue = Math.Pow(pixel.B / 255.0, gamma) * 255.0;
+
+                        Color gammaColor = Color.FromArgb((int)red, (int)green, (int)blue);
+                        gamma_img.SetPixel(x, y, gammaColor);
+                    }
+                }
+
+                imageChannel.Image = gamma_img;
+            }
         }
     }
 }
