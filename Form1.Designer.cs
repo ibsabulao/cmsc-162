@@ -43,11 +43,12 @@ namespace Image_Processing
             tableLayoutPanel1 = new TableLayoutPanel();
             tableLayoutPanel2 = new TableLayoutPanel();
             panel3 = new Panel();
+            panel6 = new Panel();
             button3 = new Button();
+            label2 = new Label();
             gamma_textbox = new TextBox();
             label4 = new Label();
             label3 = new Label();
-            label2 = new Label();
             label1 = new Label();
             bw_trackbar = new TrackBar();
             panel2 = new Panel();
@@ -59,16 +60,19 @@ namespace Image_Processing
             tableLayoutPanel3 = new TableLayoutPanel();
             tableLayoutPanel4 = new TableLayoutPanel();
             panel4 = new Panel();
+            maxFrequency = new Label();
             imageChannel = new PictureBox();
             channelLabel = new Label();
             panel1 = new Panel();
-            originalImageLabel = new Label();
+            panel5 = new Panel();
             PCXheaderInfoBox = new RichTextBox();
+            originalImageLabel = new Label();
             ViewImage = new PictureBox();
             menuStrip1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
             panel3.SuspendLayout();
+            panel6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)bw_trackbar).BeginInit();
             panel2.SuspendLayout();
             tableLayoutPanel3.SuspendLayout();
@@ -76,6 +80,7 @@ namespace Image_Processing
             panel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)imageChannel).BeginInit();
             panel1.SuspendLayout();
+            panel5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ViewImage).BeginInit();
             SuspendLayout();
             // 
@@ -141,7 +146,7 @@ namespace Image_Processing
             // spatialFiltering
             // 
             spatialFiltering.Name = "spatialFiltering";
-            spatialFiltering.Size = new Size(180, 22);
+            spatialFiltering.Size = new Size(155, 22);
             spatialFiltering.Text = "Spatial Filtering";
             spatialFiltering.Click += spatialFiltering_Click;
             // 
@@ -171,7 +176,7 @@ namespace Image_Processing
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel1.Size = new Size(1328, 885);
+            tableLayoutPanel1.Size = new Size(1328, 800);
             tableLayoutPanel1.TabIndex = 1;
             // 
             // tableLayoutPanel2
@@ -192,11 +197,8 @@ namespace Image_Processing
             // 
             // panel3
             // 
-            panel3.Controls.Add(button3);
-            panel3.Controls.Add(gamma_textbox);
-            panel3.Controls.Add(label4);
+            panel3.Controls.Add(panel6);
             panel3.Controls.Add(label3);
-            panel3.Controls.Add(label2);
             panel3.Controls.Add(label1);
             panel3.Controls.Add(bw_trackbar);
             panel3.Dock = DockStyle.Fill;
@@ -205,13 +207,24 @@ namespace Image_Processing
             panel3.Size = new Size(295, 358);
             panel3.TabIndex = 4;
             // 
+            // panel6
+            // 
+            panel6.Controls.Add(button3);
+            panel6.Controls.Add(label2);
+            panel6.Controls.Add(gamma_textbox);
+            panel6.Controls.Add(label4);
+            panel6.Location = new Point(0, 85);
+            panel6.Name = "panel6";
+            panel6.Size = new Size(295, 67);
+            panel6.TabIndex = 20;
+            // 
             // button3
             // 
             button3.Anchor = AnchorStyles.None;
             button3.AutoSize = true;
             button3.BackColor = Color.DimGray;
             button3.ForeColor = SystemColors.ButtonHighlight;
-            button3.Location = new Point(158, 101);
+            button3.Location = new Point(155, 35);
             button3.Name = "button3";
             button3.Size = new Size(113, 25);
             button3.TabIndex = 11;
@@ -219,21 +232,30 @@ namespace Image_Processing
             button3.UseVisualStyleBackColor = false;
             button3.Click += GammaTransform_Click;
             // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI", 7F, FontStyle.Regular, GraphicsUnit.Point);
+            label2.ForeColor = SystemColors.ControlText;
+            label2.Location = new Point(14, 19);
+            label2.Margin = new Padding(2, 0, 2, 0);
+            label2.Name = "label2";
+            label2.Size = new Size(111, 12);
+            label2.TabIndex = 16;
+            label2.Text = "Input Gamma (𝛾) values";
+            // 
             // gamma_textbox
             // 
-            gamma_textbox.Location = new Point(24, 101);
-            gamma_textbox.Margin = new Padding(2);
+            gamma_textbox.Location = new Point(17, 35);
             gamma_textbox.Name = "gamma_textbox";
             gamma_textbox.Size = new Size(129, 23);
-            gamma_textbox.TabIndex = 19;
-            gamma_textbox.TabStop = false;
-            gamma_textbox.KeyPress += textBox1_KeyPress;
+            gamma_textbox.TabIndex = 17;
             // 
             // label4
             // 
             label4.AutoSize = true;
             label4.ForeColor = SystemColors.ControlText;
-            label4.Location = new Point(17, 70);
+            label4.Location = new Point(14, 4);
             label4.Margin = new Padding(2, 0, 2, 0);
             label4.Name = "label4";
             label4.Size = new Size(132, 15);
@@ -251,18 +273,6 @@ namespace Image_Processing
             label3.Size = new Size(134, 12);
             label3.TabIndex = 17;
             label3.Text = "Adjust B/W Threshold [0, 255]";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Font = new Font("Segoe UI", 7F, FontStyle.Regular, GraphicsUnit.Point);
-            label2.ForeColor = SystemColors.ControlText;
-            label2.Location = new Point(17, 85);
-            label2.Margin = new Padding(2, 0, 2, 0);
-            label2.Name = "label2";
-            label2.Size = new Size(111, 12);
-            label2.TabIndex = 16;
-            label2.Text = "Input Gamma (𝛾) values";
             // 
             // label1
             // 
@@ -378,7 +388,7 @@ namespace Image_Processing
             tableLayoutPanel3.Name = "tableLayoutPanel3";
             tableLayoutPanel3.RowCount = 1;
             tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel3.Size = new Size(619, 803);
+            tableLayoutPanel3.Size = new Size(619, 794);
             tableLayoutPanel3.TabIndex = 4;
             // 
             // tableLayoutPanel4
@@ -391,17 +401,26 @@ namespace Image_Processing
             tableLayoutPanel4.Name = "tableLayoutPanel4";
             tableLayoutPanel4.RowCount = 1;
             tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel4.Size = new Size(613, 797);
+            tableLayoutPanel4.Size = new Size(613, 788);
             tableLayoutPanel4.TabIndex = 0;
             // 
             // panel4
             // 
+            panel4.Controls.Add(maxFrequency);
             panel4.Controls.Add(imageChannel);
             panel4.Controls.Add(channelLabel);
             panel4.Location = new Point(3, 3);
             panel4.Name = "panel4";
-            panel4.Size = new Size(358, 305);
+            panel4.Size = new Size(358, 336);
             panel4.TabIndex = 0;
+            // 
+            // maxFrequency
+            // 
+            maxFrequency.AutoSize = true;
+            maxFrequency.Location = new Point(8, 305);
+            maxFrequency.Name = "maxFrequency";
+            maxFrequency.Size = new Size(0, 15);
+            maxFrequency.TabIndex = 1;
             // 
             // imageChannel
             // 
@@ -424,13 +443,40 @@ namespace Image_Processing
             // panel1
             // 
             panel1.BackColor = SystemColors.ButtonFace;
+            panel1.Controls.Add(panel5);
             panel1.Controls.Add(originalImageLabel);
-            panel1.Controls.Add(PCXheaderInfoBox);
             panel1.Controls.Add(ViewImage);
             panel1.Location = new Point(308, 3);
             panel1.Name = "panel1";
-            panel1.Size = new Size(392, 803);
+            panel1.Size = new Size(392, 794);
             panel1.TabIndex = 5;
+            // 
+            // panel5
+            // 
+            panel5.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panel5.AutoScroll = true;
+            panel5.Controls.Add(PCXheaderInfoBox);
+            panel5.Location = new Point(3, 311);
+            panel5.Name = "panel5";
+            panel5.Size = new Size(386, 480);
+            panel5.TabIndex = 3;
+            // 
+            // PCXheaderInfoBox
+            // 
+            PCXheaderInfoBox.BackColor = SystemColors.ButtonFace;
+            PCXheaderInfoBox.BorderStyle = BorderStyle.None;
+            PCXheaderInfoBox.Font = new Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            PCXheaderInfoBox.ForeColor = SystemColors.MenuText;
+            PCXheaderInfoBox.Location = new Point(0, 2);
+            PCXheaderInfoBox.Margin = new Padding(2);
+            PCXheaderInfoBox.MaxLength = 21474;
+            PCXheaderInfoBox.MinimumSize = new Size(341, 250);
+            PCXheaderInfoBox.Name = "PCXheaderInfoBox";
+            PCXheaderInfoBox.ReadOnly = true;
+            PCXheaderInfoBox.ScrollBars = RichTextBoxScrollBars.None;
+            PCXheaderInfoBox.Size = new Size(386, 450);
+            PCXheaderInfoBox.TabIndex = 2;
+            PCXheaderInfoBox.Text = "";
             // 
             // originalImageLabel
             // 
@@ -440,28 +486,13 @@ namespace Image_Processing
             originalImageLabel.Size = new Size(0, 15);
             originalImageLabel.TabIndex = 2;
             // 
-            // PCXheaderInfoBox
-            // 
-            PCXheaderInfoBox.BackColor = SystemColors.ButtonHighlight;
-            PCXheaderInfoBox.BorderStyle = BorderStyle.None;
-            PCXheaderInfoBox.Enabled = false;
-            PCXheaderInfoBox.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            PCXheaderInfoBox.ForeColor = SystemColors.MenuText;
-            PCXheaderInfoBox.Location = new Point(24, 309);
-            PCXheaderInfoBox.Margin = new Padding(2);
-            PCXheaderInfoBox.Name = "PCXheaderInfoBox";
-            PCXheaderInfoBox.ReadOnly = true;
-            PCXheaderInfoBox.ScrollBars = RichTextBoxScrollBars.None;
-            PCXheaderInfoBox.Size = new Size(341, 473);
-            PCXheaderInfoBox.TabIndex = 2;
-            PCXheaderInfoBox.Text = "";
-            // 
             // ViewImage
             // 
             ViewImage.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             ViewImage.BackColor = SystemColors.ButtonFace;
             ViewImage.Location = new Point(24, 42);
             ViewImage.Margin = new Padding(3, 2, 3, 2);
+            ViewImage.MinimumSize = new Size(341, 250);
             ViewImage.Name = "ViewImage";
             ViewImage.Size = new Size(341, 250);
             ViewImage.SizeMode = PictureBoxSizeMode.Zoom;
@@ -479,7 +510,7 @@ namespace Image_Processing
             ForeColor = SystemColors.ActiveBorder;
             MainMenuStrip = menuStrip1;
             Margin = new Padding(3, 2, 3, 2);
-            MinimumSize = new Size(1344, 879);
+            MinimumSize = new Size(1344, 500);
             Name = "Form1";
             SizeGripStyle = SizeGripStyle.Hide;
             StartPosition = FormStartPosition.WindowsDefaultBounds;
@@ -491,6 +522,8 @@ namespace Image_Processing
             tableLayoutPanel2.ResumeLayout(false);
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
+            panel6.ResumeLayout(false);
+            panel6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)bw_trackbar).EndInit();
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
@@ -501,6 +534,7 @@ namespace Image_Processing
             ((System.ComponentModel.ISupportInitialize)imageChannel).EndInit();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
+            panel5.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)ViewImage).EndInit();
             ResumeLayout(false);
             PerformLayout();
@@ -543,5 +577,8 @@ namespace Image_Processing
         private Panel panel4;
         private Label channelLabel;
         private ToolStripMenuItem spatialFiltering;
+        private Panel panel5;
+        private Panel panel6;
+        private Label maxFrequency;
     }
 }

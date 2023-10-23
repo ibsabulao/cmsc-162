@@ -26,7 +26,8 @@ namespace Image_Processing
         private Bitmap? blueChannelImage;
         private PictureBox? histogramPictureBox;
 
-        private int maxFrequencyIntensity; // Declare the variable outside the method
+        private int maxFrequencyIntensity = -1;
+        private int maxCount;
 
         // Create a new form to display the histogram
         Form histogramForm = new Form();
@@ -56,7 +57,8 @@ namespace Image_Processing
                         imageChannel.Image = null; // empty if there's previously uploaded img
 
                         originalImageLabel.Text = "Original Image";
-                        channelLabel.Text = "";
+                        channelLabel.Text = null;
+                        maxFrequency.Text = null;
                         ToolTip toolTip = new ToolTip();
                         toolTip.SetToolTip(ViewImage, "Intensity: "); // Initial tooltip text
                         toolTip.SetToolTip(imageChannel, "Intensity: "); // Initial tooltip text
@@ -90,7 +92,8 @@ namespace Image_Processing
                             PCXheaderInfoBox.Clear();
 
                             originalImageLabel.Text = "Original PCX Image";
-                            channelLabel.Text = "";
+                            channelLabel.Text = null;
+                            maxFrequency.Text = null;
 
                             // header
                             byte[] header = new byte[128];
@@ -104,21 +107,19 @@ namespace Image_Processing
                             PCX_DisplayPalette(paletteData);
 
                             // image
-                            int width = header[8] + (header[9] << 8) + 1;
-                            int height = header[10] + (header[11] << 8) + 1;
-                            int bytesPerLine = (int)Math.Ceiling(bitsPerPixel * width / 8.0);
+                            int width = (header[8] - header[4]) + 1;
+                            int height = (header[10] - header[6]) + 1;
+                            int bytesPerLine = (int)Math.Ceiling(header[3] * width / 8.0);
 
                             originalImage = new Bitmap(width, height);
 
                             // Read the RLE-encoded pixel data
-                            int pixelDataSize = width * height * (header[3] / 8);
+                            int pixelDataSize = pcxData.Length - 128 - 768;
                             byte[] compressedData = new byte[pixelDataSize];
                             fileStream.Seek(128, SeekOrigin.Begin); // Seek to the start of the pixel data
                             fileStream.Read(compressedData, 0, pixelDataSize);
 
-                            byte[] decodedPixelData = new byte[width * height];
-
-                            DecodeRLE(pcxReader, decodedPixelData, width, height, bytesPerLine);
+                            byte[] decodedPixelData = DecodeRLE(compressedData);
 
                             // Create a Bitmap from the decoded pixel data
                             int index = 0;
@@ -196,36 +197,6 @@ namespace Image_Processing
             PCXheaderInfoBox.AppendText($"Vertical Screen Size: {vscreenSize}" + Environment.NewLine);
         }
 
-        /* private void PCX_DisplayPalette(byte[] paletteData)
-        {
-            PCXheaderInfoBox.Controls.Clear();
-
-            PCXheaderInfoBox.AppendText("\nColor Palette:" + Environment.NewLine);
-
-            int paletteSize = paletteData.Length / 3;
-            int paletteWidth = 10;
-            int paletteHeight = 10;
-
-            // Calculate the starting Y coordinate for appending below the text
-            int startY = PCXheaderInfoBox.GetPositionFromCharIndex(PCXheaderInfoBox.Text.Length - 1).Y + PCXheaderInfoBox.Font.Height;
-
-            for (int i = 0; i < paletteSize; i++)
-            {
-                int r = paletteData[i * 3];
-                int g = paletteData[i * 3 + 1];
-                int b = paletteData[i * 3 + 2];
-
-                // Create a color square
-                Panel colorSquare = new Panel();
-                colorSquare.BackColor = Color.FromArgb(r, g, b);
-                colorSquare.Size = new Size(paletteWidth, paletteHeight);
-                colorSquare.Location = new Point(i % 16 * paletteWidth, startY + (i / 16 * paletteHeight));
-
-                // Add the color square to the palettePanel
-                PCXheaderInfoBox.Controls.Add(colorSquare);
-            }
-        }*/
-
         private void PCX_DisplayPalette(byte[] paletteData)
         {
             PCXheaderInfoBox.Controls.Clear();
@@ -256,36 +227,31 @@ namespace Image_Processing
             }
         }
 
-        public void DecodeRLE(BinaryReader reader, byte[] data, int width, int height, int bytesPerLine)
+        public static byte[] DecodeRLE(byte[] data)
         {
-            int index = 0;
-            int currentByte, runLength;
-            byte colorIndex;
-
-            while (index < data.Length)
+            using (MemoryStream decompressedStream = new MemoryStream())
             {
-                currentByte = reader.ReadByte();
+                int index = 0;
+                int count;
 
-                if ((currentByte & 0xC0) == 0xC0)
+                while (index < data.Length)
                 {
-                    runLength = currentByte & 0x3F;
-                    colorIndex = reader.ReadByte();
-
-                    for (int i = 0; i < runLength; i++)
+                    byte currentByte = data[index++];
+                    if ((currentByte & 0xC0) == 0xC0)
                     {
-                        if (index < data.Length)
-                        {
-                            data[index++] = colorIndex;
-                        }
+                        count = currentByte & 0x3F;
+                        byte value = data[index++];
+                        for (int i = 0; i < count; i++)
+                            decompressedStream.WriteByte(value);
+                    }
+                    else
+                    {
+                        count = 1;
+                        decompressedStream.WriteByte(currentByte);
                     }
                 }
-                else
-                {
-                    if (index < data.Length)
-                    {
-                        data[index++] = (byte)currentByte;
-                    }
-                }
+
+                return decompressedStream.ToArray();
             }
         }
 
@@ -293,6 +259,7 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
+                maxFrequency.Text = null;
                 redChannelImage = SplitChannel(originalImage, ColorChannel.Red);
                 channelLabel.Text = "Red Channel";
                 histogramForm.Text = "Red Channel Histogram";
@@ -300,6 +267,7 @@ namespace Image_Processing
 
                 // Call the modified ShowHistogram method and get the histogram colors
                 Color[] histogramColors = ShowHistogram(redChannelImage);
+                maxFrequency.Text = "Intensity that has the Max Count of Pixels: " + maxFrequencyIntensity + "\r\nMax Count of Pixels: " + maxCount;
             }
         }
 
@@ -307,6 +275,7 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
+                maxFrequency.Text = null;
                 greenChannelImage = SplitChannel(originalImage, ColorChannel.Green);
                 channelLabel.Text = "Green Channel";
                 histogramForm.Text = "Green Channel Histogram";
@@ -314,6 +283,7 @@ namespace Image_Processing
 
                 // Call the modified ShowHistogram method and get the histogram colors
                 Color[] histogramColors = ShowHistogram(greenChannelImage);
+                maxFrequency.Text = "Intensity that has the Max Count of Pixels: " + maxFrequencyIntensity + "\r\nMax Count of Pixels: " + maxCount;
             }
         }
 
@@ -321,12 +291,14 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
+                maxFrequency.Text = null;
                 blueChannelImage = SplitChannel(originalImage, ColorChannel.Blue);
                 channelLabel.Text = "Blue Channel";
                 imageChannel.Image = blueChannelImage;
 
                 // Call the modified ShowHistogram method and get the histogram colors
                 Color[] histogramColors = ShowHistogram(blueChannelImage);
+                maxFrequency.Text = "Intensity that has the Max Count of Pixels: " + maxFrequencyIntensity + "\r\nMax Count of Pixels: " + maxCount;
             }
         }
 
@@ -364,7 +336,6 @@ namespace Image_Processing
             // Initialize an array to store the histogram data for each intensity level
             int[] histogram = new int[256];
             float max = 0;
-            int maxFrequencyIntensity = -1;
 
             // Iterate through each pixel in the image and update the histogram
             for (int x = 0; x < channelImage.Width; x++)
@@ -385,7 +356,7 @@ namespace Image_Processing
             }
 
             // Find the maximum count in the histogram for scaling
-            int maxCount = histogram.Max();
+            maxCount = histogram.Max();
             int histWidth = 550; // Set the width of the histogram
             int histHeight = 350; // Set the height of the histogram
 
@@ -498,6 +469,7 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
+                maxFrequency.Text = null;
                 channelLabel.Text = "Grayscale Transformation";
                 Bitmap sourceImage = originalImage;
                 Bitmap grayscaleImage = new Bitmap(sourceImage.Width, sourceImage.Height);
@@ -521,6 +493,7 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
+                maxFrequency.Text = null;
                 channelLabel.Text = "Negative Transformation";
                 Bitmap sourceImage = originalImage;
                 Bitmap negativeImage = new Bitmap(sourceImage.Width, sourceImage.Height);
@@ -544,6 +517,7 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
+                maxFrequency.Text = null;
                 channelLabel.Text = "Black and White";
                 Bitmap sourceImage = originalImage;
                 Bitmap bw_image = new Bitmap(sourceImage.Width, sourceImage.Height);
@@ -569,6 +543,7 @@ namespace Image_Processing
         {
             if (originalImage != null && !string.IsNullOrEmpty(gamma_textbox.Text))
             {
+                maxFrequency.Text = null;
                 channelLabel.Text = "Gamma Transformation";
                 Bitmap sourceImage = originalImage;
                 Bitmap gamma_img = new Bitmap(sourceImage.Width, sourceImage.Height);
@@ -594,6 +569,7 @@ namespace Image_Processing
 
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
+            maxFrequency.Text = null;
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
                 (e.KeyChar != '.'))
             {
@@ -625,7 +601,7 @@ namespace Image_Processing
                 }
 
                 Filtering spatialFiltering = new Filtering(grayscaleImage);
-                spatialFiltering.Text = "Filtering";
+                spatialFiltering.Text = "Spatial Filtering";
                 spatialFiltering.displayGrayscaleImage(grayscaleImage);
                 spatialFiltering.Show();
             }
