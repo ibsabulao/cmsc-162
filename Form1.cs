@@ -5,11 +5,21 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using static System.Net.Mime.MediaTypeNames;
 using System.Diagnostics.Metrics;
+using System.Xml.Linq;
 
 namespace Image_Processing
 {
     public partial class Form1 : Form
     {
+        private byte bitsPerPixel;
+
+        private int xMin;
+        private int yMin;
+        private int xMax;
+        private int yMax;
+        private int bytesPerLine;
+        private byte[]? pcxData;
+
         private Bitmap? originalImage;
         private Bitmap? redChannelImage;
         private Bitmap? greenChannelImage;
@@ -46,6 +56,10 @@ namespace Image_Processing
                         imageChannel.Image = null; // empty if there's previously uploaded img
 
                         originalImageLabel.Text = "Original Image";
+                        channelLabel.Text = "";
+                        ToolTip toolTip = new ToolTip();
+                        toolTip.SetToolTip(ViewImage, "Intensity: "); // Initial tooltip text
+                        toolTip.SetToolTip(imageChannel, "Intensity: "); // Initial tooltip text
                     }
                     catch (Exception ex)
                     {
@@ -55,20 +69,109 @@ namespace Image_Processing
             }
         }
 
+        private void ViewPCX_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog_1 = new OpenFileDialog())
+            {
+                openFileDialog_1.Filter = "PCX Files|*.pcx";
+                openFileDialog_1.FilterIndex = 1;
+
+                if (openFileDialog_1.ShowDialog() == DialogResult.OK)
+                {
+                    string selectedFilePath = openFileDialog_1.FileName;
+
+                    try
+                    {
+                        pcxData = File.ReadAllBytes(selectedFilePath);
+                        using (MemoryStream pcxStream = new MemoryStream(pcxData))
+                        using (BinaryReader pcxReader = new BinaryReader(pcxStream))
+                        using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Open, FileAccess.Read))
+                        {
+                            PCXheaderInfoBox.Clear();
+
+                            originalImageLabel.Text = "Original PCX Image";
+                            channelLabel.Text = "";
+
+                            // header
+                            byte[] header = new byte[128];
+                            fileStream.Read(header, 0, 128);
+                            PCX_DisplayHeaderInfo(header);
+
+                            // color palette
+                            byte[] paletteData = new byte[768];
+                            fileStream.Seek(-768, SeekOrigin.End);
+                            fileStream.Read(paletteData, 0, 768);
+                            PCX_DisplayPalette(paletteData);
+
+                            // image
+                            int width = header[8] + (header[9] << 8) + 1;
+                            int height = header[10] + (header[11] << 8) + 1;
+                            int bytesPerLine = (int)Math.Ceiling(bitsPerPixel * width / 8.0);
+
+                            originalImage = new Bitmap(width, height);
+
+                            // Read the RLE-encoded pixel data
+                            int pixelDataSize = width * height * (header[3] / 8);
+                            byte[] compressedData = new byte[pixelDataSize];
+                            fileStream.Seek(128, SeekOrigin.Begin); // Seek to the start of the pixel data
+                            fileStream.Read(compressedData, 0, pixelDataSize);
+
+                            byte[] decodedPixelData = new byte[width * height];
+
+                            DecodeRLE(pcxReader, decodedPixelData, width, height, bytesPerLine);
+
+                            // Create a Bitmap from the decoded pixel data
+                            int index = 0;
+                            for (int y = 0; y < height; y++)
+                            {
+                                for (int x = 0; x < width; x++)
+                                {
+                                    int colorIndex = decodedPixelData[index++];
+                                    Color pixelColor = Color.FromArgb(paletteData[colorIndex * 3], paletteData[colorIndex * 3 + 1], paletteData[colorIndex * 3 + 2]);
+                                    originalImage.SetPixel(x, y, pixelColor);
+                                }
+                            }
+
+                            // Display the PCX image in the PictureBox control
+                            ViewImage.Image = originalImage;
+                            imageChannel.Image = null; // empty if there's previously uploaded img
+                        }
+                    }
+
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error loading the file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
         private void PCX_DisplayHeaderInfo(byte[] header)
         {
+            string manufacturer;
+            if (header[0] == 10)
+            {
+                manufacturer = "Zshoft .pcx";
+            }
+            else
+            {
+                manufacturer = "";
+            }
+
+            bitsPerPixel = header[3];
+
             PCXheaderInfoBox.AppendText("PCX Header Information: " + Environment.NewLine + Environment.NewLine);
-            PCXheaderInfoBox.AppendText($"Manufacturer: {header[0]}" + Environment.NewLine);
+            PCXheaderInfoBox.AppendText($"Manufacturer: {manufacturer}" + Environment.NewLine);
             PCXheaderInfoBox.AppendText($"Version: {header[1]}" + Environment.NewLine);
             PCXheaderInfoBox.AppendText($"Encoding: {header[2]}" + Environment.NewLine);
-            PCXheaderInfoBox.AppendText($"Bits Per Pixel: {header[3]}" + Environment.NewLine);
+            PCXheaderInfoBox.AppendText($"Bits Per Pixel: {bitsPerPixel}" + Environment.NewLine);
 
             // image dimensions
-            int xmin = BitConverter.ToInt16(header, 4);
-            int ymin = BitConverter.ToInt16(header, 6);
-            int xmax = BitConverter.ToInt16(header, 8);
-            int ymax = BitConverter.ToInt16(header, 10);
-            PCXheaderInfoBox.AppendText($"Window Dimensions: {xmin} {ymin} {xmax} {ymax}" + Environment.NewLine);
+            xMin = BitConverter.ToInt16(header, 4);
+            yMin = BitConverter.ToInt16(header, 6);
+            xMax = BitConverter.ToInt16(header, 8);
+            yMax = BitConverter.ToInt16(header, 10);
+            PCXheaderInfoBox.AppendText($"Window Dimensions: {xMin} {yMin} {xMax} {yMax}" + Environment.NewLine);
 
             int hdpi = BitConverter.ToUInt16(header, 12);
             int vdpi = BitConverter.ToUInt16(header, 14);
@@ -81,7 +184,7 @@ namespace Image_Processing
             int nplanes = header[65];
             PCXheaderInfoBox.AppendText($"Number of Color Planes: {nplanes}" + Environment.NewLine);
 
-            int bytesPerLine = BitConverter.ToUInt16(header, 66);
+            bytesPerLine = BitConverter.ToUInt16(header, 66);
             PCXheaderInfoBox.AppendText($"Bytes Per Line: {bytesPerLine}" + Environment.NewLine);
 
             int paletteInfo = BitConverter.ToUInt16(header, 68);
@@ -92,6 +195,36 @@ namespace Image_Processing
             PCXheaderInfoBox.AppendText($"Horizontal Screen Size: {hscreenSize}" + Environment.NewLine);
             PCXheaderInfoBox.AppendText($"Vertical Screen Size: {vscreenSize}" + Environment.NewLine);
         }
+
+        /* private void PCX_DisplayPalette(byte[] paletteData)
+        {
+            PCXheaderInfoBox.Controls.Clear();
+
+            PCXheaderInfoBox.AppendText("\nColor Palette:" + Environment.NewLine);
+
+            int paletteSize = paletteData.Length / 3;
+            int paletteWidth = 10;
+            int paletteHeight = 10;
+
+            // Calculate the starting Y coordinate for appending below the text
+            int startY = PCXheaderInfoBox.GetPositionFromCharIndex(PCXheaderInfoBox.Text.Length - 1).Y + PCXheaderInfoBox.Font.Height;
+
+            for (int i = 0; i < paletteSize; i++)
+            {
+                int r = paletteData[i * 3];
+                int g = paletteData[i * 3 + 1];
+                int b = paletteData[i * 3 + 2];
+
+                // Create a color square
+                Panel colorSquare = new Panel();
+                colorSquare.BackColor = Color.FromArgb(r, g, b);
+                colorSquare.Size = new Size(paletteWidth, paletteHeight);
+                colorSquare.Location = new Point(i % 16 * paletteWidth, startY + (i / 16 * paletteHeight));
+
+                // Add the color square to the palettePanel
+                PCXheaderInfoBox.Controls.Add(colorSquare);
+            }
+        }*/
 
         private void PCX_DisplayPalette(byte[] paletteData)
         {
@@ -123,99 +256,34 @@ namespace Image_Processing
             }
         }
 
-        public static byte[] DecodeRLE(byte[] data)
+        public void DecodeRLE(BinaryReader reader, byte[] data, int width, int height, int bytesPerLine)
         {
-            using (MemoryStream decompressedStream = new MemoryStream())
+            int index = 0;
+            int currentByte, runLength;
+            byte colorIndex;
+
+            while (index < data.Length)
             {
-                int index = 0;
-                int count;
+                currentByte = reader.ReadByte();
 
-                while (index < data.Length)
+                if ((currentByte & 0xC0) == 0xC0)
                 {
-                    byte currentByte = data[index++];
-                    if ((currentByte & 0xC0) == 0xC0)
-                    {
-                        count = currentByte & 0x3F;
-                        byte value = data[index++];
-                        for (int i = 0; i < count; i++)
-                            decompressedStream.WriteByte(value);
-                    }
-                    else
-                    {
-                        count = 1;
-                        decompressedStream.WriteByte(currentByte);
-                    }
-                }
+                    runLength = currentByte & 0x3F;
+                    colorIndex = reader.ReadByte();
 
-                return decompressedStream.ToArray();
-            }
-        }
-        private void ViewPCX_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog openFileDialog_1 = new OpenFileDialog())
-            {
-                openFileDialog_1.Filter = "PCX Files|*.pcx";
-                openFileDialog_1.FilterIndex = 1;
-
-                if (openFileDialog_1.ShowDialog() == DialogResult.OK)
-                {
-                    string selectedFilePath = openFileDialog_1.FileName;
-
-                    try
+                    for (int i = 0; i < runLength; i++)
                     {
-                        using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Open, FileAccess.Read))
+                        if (index < data.Length)
                         {
-                            PCXheaderInfoBox.Clear();
-
-                            originalImageLabel.Text = "Original PCX Image";
-
-                            // header
-                            byte[] header = new byte[128];
-                            fileStream.Read(header, 0, 128);
-                            PCX_DisplayHeaderInfo(header);
-
-                            // color palette
-                            byte[] paletteData = new byte[768];
-                            fileStream.Seek(-768, SeekOrigin.End);
-                            fileStream.Read(paletteData, 0, 768);
-                            PCX_DisplayPalette(paletteData);
-
-                            // image
-                            int width = header[8] + (header[9] << 8) + 1;
-                            int height = header[10] + (header[11] << 8) + 1;
-
-                            originalImage = new Bitmap(width, height);
-
-                            // Read the RLE-encoded pixel data
-                            int pixelDataSize = width * height * (header[3] / 8);
-                            byte[] compressedData = new byte[pixelDataSize];
-                            fileStream.Seek(128, SeekOrigin.Begin); // Seek to the start of the pixel data
-                            fileStream.Read(compressedData, 0, pixelDataSize);
-
-                            // Decode the RLE-encoded pixel data
-                            byte[] decompressedData = DecodeRLE(compressedData);
-
-                            // Create a Bitmap from the decoded pixel data
-                            int index = 0;
-                            for (int y = 0; y < height; y++)
-                            {
-                                for (int x = 0; x < width; x++)
-                                {
-                                    int colorIndex = decompressedData[index++];
-                                    Color pixelColor = Color.FromArgb(paletteData[colorIndex * 3], paletteData[colorIndex * 3 + 1], paletteData[colorIndex * 3 + 2]);
-                                    originalImage.SetPixel(x, y, pixelColor);
-                                }
-                            }
-
-                            // Display the PCX image in the PictureBox control
-                            ViewImage.Image = originalImage;
-                            imageChannel.Image = null; // empty if there's previously uploaded img
+                            data[index++] = colorIndex;
                         }
                     }
-
-                    catch (Exception ex)
+                }
+                else
+                {
+                    if (index < data.Length)
                     {
-                        MessageBox.Show($"Error loading the file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        data[index++] = (byte)currentByte;
                     }
                 }
             }
@@ -536,6 +604,30 @@ namespace Image_Processing
             if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
             {
                 e.Handled = true;
+            }
+        }
+
+        private void spatialFiltering_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                Bitmap sourceImage = originalImage;
+                Bitmap grayscaleImage = new Bitmap(sourceImage.Width, sourceImage.Height);
+
+                for (int x = 0; x < sourceImage.Width; x++)
+                {
+                    for (int y = 0; y < sourceImage.Height; y++)
+                    {
+                        Color pixel = sourceImage.GetPixel(x, y);
+                        int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B);
+                        grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue));
+                    }
+                }
+
+                Filtering spatialFiltering = new Filtering(grayscaleImage);
+                spatialFiltering.Text = "Filtering";
+                spatialFiltering.displayGrayscaleImage(grayscaleImage);
+                spatialFiltering.Show();
             }
         }
     }

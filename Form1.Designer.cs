@@ -38,6 +38,7 @@ namespace Image_Processing
             menu2ToolStripMenuItem = new ToolStripMenuItem();
             processToolStripMenuItem = new ToolStripMenuItem();
             filterToolStripMenuItem = new ToolStripMenuItem();
+            spatialFiltering = new ToolStripMenuItem();
             animationToolStripMenuItem = new ToolStripMenuItem();
             tableLayoutPanel1 = new TableLayoutPanel();
             tableLayoutPanel2 = new TableLayoutPanel();
@@ -60,9 +61,9 @@ namespace Image_Processing
             panel4 = new Panel();
             imageChannel = new PictureBox();
             channelLabel = new Label();
-            PCXheaderInfoBox = new RichTextBox();
             panel1 = new Panel();
             originalImageLabel = new Label();
+            PCXheaderInfoBox = new RichTextBox();
             ViewImage = new PictureBox();
             menuStrip1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
@@ -132,9 +133,17 @@ namespace Image_Processing
             // 
             // filterToolStripMenuItem
             // 
+            filterToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { spatialFiltering });
             filterToolStripMenuItem.Name = "filterToolStripMenuItem";
             filterToolStripMenuItem.Size = new Size(45, 20);
             filterToolStripMenuItem.Text = "Filter";
+            // 
+            // spatialFiltering
+            // 
+            spatialFiltering.Name = "spatialFiltering";
+            spatialFiltering.Size = new Size(180, 22);
+            spatialFiltering.Text = "Spatial Filtering";
+            spatialFiltering.Click += spatialFiltering_Click;
             // 
             // animationToolStripMenuItem
             // 
@@ -162,7 +171,7 @@ namespace Image_Processing
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel1.Size = new Size(1328, 659);
+            tableLayoutPanel1.Size = new Size(1328, 885);
             tableLayoutPanel1.TabIndex = 1;
             // 
             // tableLayoutPanel2
@@ -369,21 +378,20 @@ namespace Image_Processing
             tableLayoutPanel3.Name = "tableLayoutPanel3";
             tableLayoutPanel3.RowCount = 1;
             tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel3.Size = new Size(619, 586);
+            tableLayoutPanel3.Size = new Size(619, 803);
             tableLayoutPanel3.TabIndex = 4;
             // 
             // tableLayoutPanel4
             // 
             tableLayoutPanel4.ColumnCount = 2;
-            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 59.3800964F));
+            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40.6199036F));
             tableLayoutPanel4.Controls.Add(panel4, 0, 0);
-            tableLayoutPanel4.Controls.Add(PCXheaderInfoBox, 1, 0);
             tableLayoutPanel4.Location = new Point(3, 3);
             tableLayoutPanel4.Name = "tableLayoutPanel4";
             tableLayoutPanel4.RowCount = 1;
             tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel4.Size = new Size(613, 580);
+            tableLayoutPanel4.Size = new Size(613, 797);
             tableLayoutPanel4.TabIndex = 0;
             // 
             // panel4
@@ -392,14 +400,15 @@ namespace Image_Processing
             panel4.Controls.Add(channelLabel);
             panel4.Location = new Point(3, 3);
             panel4.Name = "panel4";
-            panel4.Size = new Size(300, 243);
+            panel4.Size = new Size(358, 305);
             panel4.TabIndex = 0;
             // 
             // imageChannel
             // 
-            imageChannel.Location = new Point(0, 14);
+            imageChannel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            imageChannel.Location = new Point(8, 36);
             imageChannel.Name = "imageChannel";
-            imageChannel.Size = new Size(300, 229);
+            imageChannel.Size = new Size(341, 250);
             imageChannel.SizeMode = PictureBoxSizeMode.Zoom;
             imageChannel.TabIndex = 0;
             imageChannel.TabStop = false;
@@ -412,30 +421,15 @@ namespace Image_Processing
             channelLabel.Size = new Size(0, 15);
             channelLabel.TabIndex = 0;
             // 
-            // PCXheaderInfoBox
-            // 
-            PCXheaderInfoBox.BackColor = SystemColors.ButtonHighlight;
-            PCXheaderInfoBox.BorderStyle = BorderStyle.None;
-            PCXheaderInfoBox.Enabled = false;
-            PCXheaderInfoBox.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            PCXheaderInfoBox.ForeColor = SystemColors.MenuText;
-            PCXheaderInfoBox.Location = new Point(308, 2);
-            PCXheaderInfoBox.Margin = new Padding(2);
-            PCXheaderInfoBox.Name = "PCXheaderInfoBox";
-            PCXheaderInfoBox.ReadOnly = true;
-            PCXheaderInfoBox.ScrollBars = RichTextBoxScrollBars.None;
-            PCXheaderInfoBox.Size = new Size(303, 473);
-            PCXheaderInfoBox.TabIndex = 2;
-            PCXheaderInfoBox.Text = "";
-            // 
             // panel1
             // 
             panel1.BackColor = SystemColors.ButtonFace;
             panel1.Controls.Add(originalImageLabel);
+            panel1.Controls.Add(PCXheaderInfoBox);
             panel1.Controls.Add(ViewImage);
             panel1.Location = new Point(308, 3);
             panel1.Name = "panel1";
-            panel1.Size = new Size(392, 587);
+            panel1.Size = new Size(392, 803);
             panel1.TabIndex = 5;
             // 
             // originalImageLabel
@@ -446,6 +440,22 @@ namespace Image_Processing
             originalImageLabel.Size = new Size(0, 15);
             originalImageLabel.TabIndex = 2;
             // 
+            // PCXheaderInfoBox
+            // 
+            PCXheaderInfoBox.BackColor = SystemColors.ButtonHighlight;
+            PCXheaderInfoBox.BorderStyle = BorderStyle.None;
+            PCXheaderInfoBox.Enabled = false;
+            PCXheaderInfoBox.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            PCXheaderInfoBox.ForeColor = SystemColors.MenuText;
+            PCXheaderInfoBox.Location = new Point(24, 309);
+            PCXheaderInfoBox.Margin = new Padding(2);
+            PCXheaderInfoBox.Name = "PCXheaderInfoBox";
+            PCXheaderInfoBox.ReadOnly = true;
+            PCXheaderInfoBox.ScrollBars = RichTextBoxScrollBars.None;
+            PCXheaderInfoBox.Size = new Size(341, 473);
+            PCXheaderInfoBox.TabIndex = 2;
+            PCXheaderInfoBox.Text = "";
+            // 
             // ViewImage
             // 
             ViewImage.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
@@ -453,7 +463,7 @@ namespace Image_Processing
             ViewImage.Location = new Point(24, 42);
             ViewImage.Margin = new Padding(3, 2, 3, 2);
             ViewImage.Name = "ViewImage";
-            ViewImage.Size = new Size(341, 436);
+            ViewImage.Size = new Size(341, 250);
             ViewImage.SizeMode = PictureBoxSizeMode.Zoom;
             ViewImage.TabIndex = 1;
             ViewImage.TabStop = false;
@@ -463,12 +473,13 @@ namespace Image_Processing
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ButtonFace;
-            ClientSize = new Size(1328, 614);
+            ClientSize = new Size(1328, 840);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(menuStrip1);
             ForeColor = SystemColors.ActiveBorder;
             MainMenuStrip = menuStrip1;
             Margin = new Padding(3, 2, 3, 2);
+            MinimumSize = new Size(1344, 879);
             Name = "Form1";
             SizeGripStyle = SizeGripStyle.Hide;
             StartPosition = FormStartPosition.WindowsDefaultBounds;
@@ -531,5 +542,6 @@ namespace Image_Processing
         private TextBox gamma_textbox;
         private Panel panel4;
         private Label channelLabel;
+        private ToolStripMenuItem spatialFiltering;
     }
 }
