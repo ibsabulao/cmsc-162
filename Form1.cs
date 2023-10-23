@@ -104,21 +104,19 @@ namespace Image_Processing
                             PCX_DisplayPalette(paletteData);
 
                             // image
-                            int width = header[8] + (header[9] << 8) + 1;
-                            int height = header[10] + (header[11] << 8) + 1;
-                            int bytesPerLine = (int)Math.Ceiling(bitsPerPixel * width / 8.0);
+                            int width = (header[8] - header[4]) + 1;
+                            int height = (header[10] - header[6]) + 1;
+                            int bytesPerLine = (int)Math.Ceiling(header[3] * width / 8.0);
 
                             originalImage = new Bitmap(width, height);
 
                             // Read the RLE-encoded pixel data
-                            int pixelDataSize = width * height * (header[3] / 8);
+                            int pixelDataSize = pcxData.Length - 128 - 768;
                             byte[] compressedData = new byte[pixelDataSize];
                             fileStream.Seek(128, SeekOrigin.Begin); // Seek to the start of the pixel data
                             fileStream.Read(compressedData, 0, pixelDataSize);
 
-                            byte[] decodedPixelData = new byte[width * height];
-
-                            DecodeRLE(pcxReader, decodedPixelData, width, height, bytesPerLine);
+                            byte[] decodedPixelData = DecodeRLE(compressedData);
 
                             // Create a Bitmap from the decoded pixel data
                             int index = 0;
@@ -256,36 +254,65 @@ namespace Image_Processing
             }
         }
 
-        public void DecodeRLE(BinaryReader reader, byte[] data, int width, int height, int bytesPerLine)
+        //public void DecodeRLE(BinaryReader reader, byte[] data, int width, int height, int bytesPerLine)
+        //{
+        //    int index = 0;
+        //    int currentByte;
+        //    int runLength;
+        //    byte colorIndex;
+
+        //    while (index < data.Length)
+        //    {
+        //        currentByte = reader.ReadByte();
+
+        //        if ((currentByte & 0xC0) == 0xC0)
+        //        {
+        //            runLength = currentByte & 0x3F;
+        //            colorIndex = reader.ReadByte();
+
+        //            for (int i = 0; i < runLength; i++)
+        //            {
+        //                if (index < data.Length)
+        //                {
+        //                    data[index++] = colorIndex;
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (index < data.Length)
+        //            {
+        //                data[index++] = (byte)currentByte;
+        //            }
+        //        }
+        //    }
+        //}
+
+        public static byte[] DecodeRLE(byte[] data)
         {
-            int index = 0;
-            int currentByte, runLength;
-            byte colorIndex;
-
-            while (index < data.Length)
+            using (MemoryStream decompressedStream = new MemoryStream())
             {
-                currentByte = reader.ReadByte();
+                int index = 0;
+                int count;
 
-                if ((currentByte & 0xC0) == 0xC0)
+                while (index < data.Length)
                 {
-                    runLength = currentByte & 0x3F;
-                    colorIndex = reader.ReadByte();
-
-                    for (int i = 0; i < runLength; i++)
+                    byte currentByte = data[index++];
+                    if ((currentByte & 0xC0) == 0xC0)
                     {
-                        if (index < data.Length)
-                        {
-                            data[index++] = colorIndex;
-                        }
+                        count = currentByte & 0x3F;
+                        byte value = data[index++];
+                        for (int i = 0; i < count; i++)
+                            decompressedStream.WriteByte(value);
+                    }
+                    else
+                    {
+                        count = 1;
+                        decompressedStream.WriteByte(currentByte);
                     }
                 }
-                else
-                {
-                    if (index < data.Length)
-                    {
-                        data[index++] = (byte)currentByte;
-                    }
-                }
+
+                return decompressedStream.ToArray();
             }
         }
 
@@ -629,6 +656,11 @@ namespace Image_Processing
                 spatialFiltering.displayGrayscaleImage(grayscaleImage);
                 spatialFiltering.Show();
             }
+        }
+
+        private void PCXheaderInfoBox_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
