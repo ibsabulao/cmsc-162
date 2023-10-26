@@ -11,22 +11,36 @@ namespace Image_Processing
 {
     public partial class Form1 : Form
     {
+        // bitsPerPixel: Number of bits per pixel in the PCX image.
         private byte bitsPerPixel;
 
+        // xMin, yMin, xMax, yMax: Dimensions of the window in the PCX image.
         private int xMin;
         private int yMin;
         private int xMax;
         private int yMax;
+
+        // bytesPerLine: Number of bytes per scanline in the PCX image.
         private int bytesPerLine;
+
+        // pcxData: Byte array containing PCX image data.
         private byte[]? pcxData;
 
+        // originalImage: Bitmap representing the original image.
         private Bitmap? originalImage;
+
+        // redChannelImage, greenChannelImage, blueChannelImage: Bitmaps representing color channel images.
         private Bitmap? redChannelImage;
         private Bitmap? greenChannelImage;
         private Bitmap? blueChannelImage;
+
+        // histogramPictureBox: PictureBox used for displaying histograms.
         private PictureBox? histogramPictureBox;
 
+        // maxFrequencyIntensity: Intensity value that has the maximum count of pixels in a histogram.
         private int maxFrequencyIntensity = -1;
+
+        // maxCount: Maximum count of pixels in a histogram.
         private int maxCount;
 
         // Create a new form to display the histogram
@@ -36,94 +50,111 @@ namespace Image_Processing
             InitializeComponent();
         }
 
-        // function to load image file
+        // ViewImage_Click event handler is triggered when the "View Image" button is clicked.
         private void ViewImage_Click(object sender, EventArgs e)
         {
+            // Create an OpenFileDialog to allow the user to select an image file.
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
+                // Set the filter for allowed image file formats in the file dialog.
                 openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.ico;*.tiff;*.jfif|All Files|*.*";
                 openFileDialog.FilterIndex = 1;
 
+                // Check if the user selects an image file and clicks "OK" in the file dialog.
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
+                    // Get the path of the selected image file.
                     string selectedFilePath = openFileDialog.FileName;
 
                     try
                     {
+                        // Clear any existing information and loaded images.
                         PCXheaderInfoBox.Controls.Clear();
                         PCXheaderInfoBox.Clear();
 
+                        // Load the selected image and display it in the "ViewImage" PictureBox.
                         originalImage = new Bitmap(selectedFilePath);
                         ViewImage.Image = originalImage;
-                        imageChannel.Image = null; // empty if there's previously uploaded img
 
+                        // Clear any previously displayed image channel and labels.
+                        imageChannel.Image = null;
                         originalImageLabel.Text = "Original Image";
                         channelLabel.Text = null;
                         maxFrequency.Text = null;
+
+                        // Set tooltips for the PictureBox and imageChannel PictureBox to show intensity information.
                         ToolTip toolTip = new ToolTip();
-                        toolTip.SetToolTip(ViewImage, "Intensity: "); // Initial tooltip text
-                        toolTip.SetToolTip(imageChannel, "Intensity: "); // Initial tooltip text
+                        toolTip.SetToolTip(ViewImage, "Intensity: "); // Initial tooltip text for "ViewImage".
+                        toolTip.SetToolTip(imageChannel, "Intensity: "); // Initial tooltip text for "imageChannel".
                     }
                     catch (Exception ex)
                     {
+                        // Display an error message if there is an issue loading the image.
                         MessageBox.Show($"Error loading the image: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
         }
 
-        // function to load pcx file
+        // ViewPCX_Click event handler is triggered when the "View PCX" button is clicked.
         private void ViewPCX_Click(object sender, EventArgs e)
         {
+            // Create an OpenFileDialog to allow the user to select a PCX image file.
             using (OpenFileDialog openFileDialog_1 = new OpenFileDialog())
             {
+                // Set the filter to allow only PCX image files in the file dialog.
                 openFileDialog_1.Filter = "PCX Files|*.pcx";
                 openFileDialog_1.FilterIndex = 1;
 
+                // Check if the user selects a PCX image file and clicks "OK" in the file dialog.
                 if (openFileDialog_1.ShowDialog() == DialogResult.OK)
                 {
+                    // Get the path of the selected PCX image file.
                     string selectedFilePath = openFileDialog_1.FileName;
 
                     try
                     {
+                        // Read the PCX image file data into a byte array.
                         pcxData = File.ReadAllBytes(selectedFilePath);
+
+                        // Initialize streams and readers for processing the PCX file.
                         using (MemoryStream pcxStream = new MemoryStream(pcxData))
                         using (BinaryReader pcxReader = new BinaryReader(pcxStream))
                         using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Open, FileAccess.Read))
                         {
+                            // Clear any existing information and loaded images.
                             PCXheaderInfoBox.Clear();
-
                             originalImageLabel.Text = "Original PCX Image";
                             channelLabel.Text = null;
                             maxFrequency.Text = null;
 
-                            // header
+                            // Read and display the PCX image header information.
                             byte[] header = new byte[128];
                             fileStream.Read(header, 0, 128);
                             PCX_DisplayHeaderInfo(header);
 
-                            // color palette
+                            // Read and display the color palette information.
                             byte[] paletteData = new byte[768];
                             fileStream.Seek(-768, SeekOrigin.End);
                             fileStream.Read(paletteData, 0, 768);
                             PCX_DisplayPalette(paletteData);
 
-                            // image
+                            // Extract image dimensions and calculate bytes per line.
                             int width = (header[8] - header[4]) + 1;
                             int height = (header[10] - header[6]) + 1;
                             int bytesPerLine = (int)Math.Ceiling(header[3] * width / 8.0);
 
+                            // Initialize a Bitmap to store the PCX image.
                             originalImage = new Bitmap(width, height);
 
-                            // Read the RLE-encoded pixel data
+                            // Read and decode the RLE-encoded pixel data.
                             int pixelDataSize = pcxData.Length - 128 - 768;
                             byte[] compressedData = new byte[pixelDataSize];
                             fileStream.Seek(128, SeekOrigin.Begin); // Seek to the start of the pixel data
                             fileStream.Read(compressedData, 0, pixelDataSize);
-
                             byte[] decodedPixelData = DecodeRLE(compressedData);
 
-                            // Create a Bitmap from the decoded pixel data
+                            // Create a Bitmap from the decoded pixel data and set pixel colors.
                             int index = 0;
                             for (int y = 0; y < height; y++)
                             {
@@ -135,70 +166,78 @@ namespace Image_Processing
                                 }
                             }
 
-                            // Display the PCX image in the PictureBox control
+                            // Display the PCX image in the PictureBox control.
                             ViewImage.Image = originalImage;
-                            imageChannel.Image = null; // empty if there's previously uploaded img
+                            imageChannel.Image = null; // Empty if there's a previously uploaded image.
                         }
                     }
-
                     catch (Exception ex)
                     {
+                        // Display an error message if there is an issue loading the PCX image.
                         MessageBox.Show($"Error loading the file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
         }
 
-        // function to extract and display PCX header information
+        // PCX_DisplayHeaderInfo method displays header information of a PCX image.
         private void PCX_DisplayHeaderInfo(byte[] header)
         {
+            // Determine the manufacturer based on the value in the PCX header.
             string manufacturer;
             if (header[0] == 10)
             {
-                manufacturer = "Zshoft .pcx";
+                manufacturer = "Zsoft .pcx";
             }
             else
             {
                 manufacturer = "";
             }
 
+            // Extract and display header information in the PCXheaderInfoBox.
             bitsPerPixel = header[3];
-
             PCXheaderInfoBox.AppendText("PCX Header Information: " + Environment.NewLine + Environment.NewLine);
             PCXheaderInfoBox.AppendText($"Manufacturer: {manufacturer}" + Environment.NewLine);
             PCXheaderInfoBox.AppendText($"Version: {header[1]}" + Environment.NewLine);
             PCXheaderInfoBox.AppendText($"Encoding: {header[2]}" + Environment.NewLine);
             PCXheaderInfoBox.AppendText($"Bits Per Pixel: {bitsPerPixel}" + Environment.NewLine);
 
-            // image dimensions
+            // Extract and display image dimensions.
             xMin = BitConverter.ToInt16(header, 4);
             yMin = BitConverter.ToInt16(header, 6);
             xMax = BitConverter.ToInt16(header, 8);
             yMax = BitConverter.ToInt16(header, 10);
             PCXheaderInfoBox.AppendText($"Window Dimensions: {xMin} {yMin} {xMax} {yMax}" + Environment.NewLine);
 
+            // Extract and display horizontal and vertical resolution (DPI).
             int hdpi = BitConverter.ToUInt16(header, 12);
             int vdpi = BitConverter.ToUInt16(header, 14);
             PCXheaderInfoBox.AppendText($"Horizontal Resolution (DPI): {hdpi}" + Environment.NewLine);
             PCXheaderInfoBox.AppendText($"Vertical Resolution (DPI): {vdpi}" + Environment.NewLine);
 
+            // Extract and display colormap information.
             int colormap = BitConverter.ToUInt16(header, 16);
             PCXheaderInfoBox.AppendText($"Colormap: {colormap}" + Environment.NewLine);
 
+            // Extract and display the number of color planes.
             int nplanes = header[65];
             PCXheaderInfoBox.AppendText($"Number of Color Planes: {nplanes}" + Environment.NewLine);
 
+            // Extract and display bytes per line.
             bytesPerLine = BitConverter.ToUInt16(header, 66);
             PCXheaderInfoBox.AppendText($"Bytes Per Line: {bytesPerLine}" + Environment.NewLine);
 
+            // Extract and display palette information.
             int paletteInfo = BitConverter.ToUInt16(header, 68);
             PCXheaderInfoBox.AppendText($"Palette Information: {paletteInfo}" + Environment.NewLine);
 
+            // Extract and display horizontal and vertical screen sizes.
             int hscreenSize = BitConverter.ToUInt16(header, 70);
             int vscreenSize = BitConverter.ToUInt16(header, 72);
             PCXheaderInfoBox.AppendText($"Horizontal Screen Size: {hscreenSize}" + Environment.NewLine);
             PCXheaderInfoBox.AppendText($"Vertical Screen Size: {vscreenSize}" + Environment.NewLine);
         }
+
 
         private void PCX_DisplayPalette(byte[] paletteData)
         {
@@ -260,71 +299,87 @@ namespace Image_Processing
             }
         }
 
+        // Handle the "Red" button click event to display the Red channel of the original image.
         private void Red_Click(object sender, EventArgs e)
         {
             if (originalImage != null)
             {
-                maxFrequency.Text = null;
-                redChannelImage = SplitChannel(originalImage, ColorChannel.Red);
-                channelLabel.Text = "Red Channel";
-                histogramForm.Text = "Red Channel Histogram";
-                imageChannel.Image = redChannelImage;
+                maxFrequency.Text = null; // Clear the text in the maxFrequency label.
+                redChannelImage = SplitChannel(originalImage, ColorChannel.Red); // Extract the Red channel from the original image and store it in redChannelImage.
+                channelLabel.Text = "Red Channel"; // Update the label to indicate the currently displayed channel.
+                histogramForm.Text = "Red Channel Histogram"; // Update the title of the histogramForm
+                imageChannel.Image = redChannelImage; // Display the Red channel image in the imageChannel PictureBox.
 
                 // Call the modified ShowHistogram method and get the histogram colors
-                Color[] histogramColors = ShowHistogram(redChannelImage);
+                Color[] histogramColors = ShowHistogram(redChannelImage); // Call a modified ShowHistogram method to display the histogram for the Red channel.
+
+                // Display information about the maximum pixel count in the maxFrequency label.
                 maxFrequency.Text = "Intensity that has the Max Count of Pixels: " + maxFrequencyIntensity + "\r\nMax Count of Pixels: " + maxCount;
             }
         }
 
+        // Handle the "Green" button click event to display the Green channel of the original image.
         private void Green_Click(object sender, EventArgs e)
         {
             if (originalImage != null)
             {
-                maxFrequency.Text = null;
-                greenChannelImage = SplitChannel(originalImage, ColorChannel.Green);
-                channelLabel.Text = "Green Channel";
-                histogramForm.Text = "Green Channel Histogram";
-                imageChannel.Image = greenChannelImage;
+                maxFrequency.Text = null; // Clear the text in the maxFrequency label.
+                greenChannelImage = SplitChannel(originalImage, ColorChannel.Green); // Extract the Green channel from the original image and store it in greenChannelImage.
+                channelLabel.Text = "Green Channel"; // Update the label to indicate the currently displayed channel.
+                histogramForm.Text = "Green Channel Histogram"; // Update the title of the histogramForm.
+                imageChannel.Image = greenChannelImage; // Display the Green channel image in the imageChannel PictureBox.
 
                 // Call the modified ShowHistogram method and get the histogram colors
                 Color[] histogramColors = ShowHistogram(greenChannelImage);
+
+                // Display information about the maximum pixel count in the maxFrequency label.
                 maxFrequency.Text = "Intensity that has the Max Count of Pixels: " + maxFrequencyIntensity + "\r\nMax Count of Pixels: " + maxCount;
             }
         }
 
+        // Handle the "Blue" button click event to display the Blue channel of the original image.
         private void Blue_Click(object sender, EventArgs e)
         {
             if (originalImage != null)
             {
-                maxFrequency.Text = null;
-                blueChannelImage = SplitChannel(originalImage, ColorChannel.Blue);
-                channelLabel.Text = "Blue Channel";
-                imageChannel.Image = blueChannelImage;
+                maxFrequency.Text = null; // Clear the text in the maxFrequency label.
+                blueChannelImage = SplitChannel(originalImage, ColorChannel.Blue); // Extract the Blue channel from the original image and store it in blueChannelImage.
+                channelLabel.Text = "Blue Channel"; // Update the label to indicate the currently displayed channel.
+                imageChannel.Image = blueChannelImage; // Display the Blue channel image in the imageChannel PictureBox.
 
                 // Call the modified ShowHistogram method and get the histogram colors
                 Color[] histogramColors = ShowHistogram(blueChannelImage);
+
+                // Display information about the maximum pixel count in the maxFrequency label.
                 maxFrequency.Text = "Intensity that has the Max Count of Pixels: " + maxFrequencyIntensity + "\r\nMax Count of Pixels: " + maxCount;
             }
         }
 
+        // SplitChannel method takes an input image and extracts a specific color channel (Red, Green, or Blue).
+        // It returns a new Bitmap containing only the selected color channel while setting the others to zero.
         private Bitmap SplitChannel(Bitmap sourceImage, ColorChannel channel)
         {
+            // Create a new Bitmap to store the extracted color channel with the same dimensions as the source image.
             Bitmap channelImage = new Bitmap(sourceImage.Width, sourceImage.Height);
 
+            // Loop through each pixel in the source image.
             for (int x = 0; x < sourceImage.Width; x++)
             {
                 for (int y = 0; y < sourceImage.Height; y++)
                 {
-                    Color pixel = sourceImage.GetPixel(x, y);
+                    Color pixel = sourceImage.GetPixel(x, y); // Get the color of the current pixel.
+
+                    // Create a new pixel with the specified color channel set to its original value and others set to zero.
                     Color newPixel = Color.FromArgb(
                         channel == ColorChannel.Red ? pixel.R : 0,
                         channel == ColorChannel.Green ? pixel.G : 0,
                         channel == ColorChannel.Blue ? pixel.B : 0
                     );
+                    // Set the corresponding pixel in the channelImage to the new pixel.
                     channelImage.SetPixel(x, y, newPixel);
                 }
             }
-
+            // Return the channelImage containing the extracted color channel.
             return channelImage;
         }
 
@@ -463,11 +518,12 @@ namespace Image_Processing
             return histogramColors;
         }
 
+        // Define an enumeration called ColorChannel to represent the three primary color channels.
         private enum ColorChannel
         {
-            Red,
-            Green,
-            Blue
+            Red, // Represents the red color channel.
+            Green, // Represents the green color channel.
+            Blue // Represents the blue color channel.
         }
 
         // function for greyscale transformation
@@ -625,27 +681,30 @@ namespace Image_Processing
             }
         }
 
+        // Button for Spatial Filtering
         private void spatialFiltering_Click(object sender, EventArgs e)
         {
+            // Check if the originalImage has been loaded
             if (originalImage != null)
             {
-                Bitmap sourceImage = originalImage;
-                Bitmap grayscaleImage = new Bitmap(sourceImage.Width, sourceImage.Height);
+                Bitmap sourceImage = originalImage; // Create a new Bitmap object to hold the source image
+                Bitmap grayscaleImage = new Bitmap(sourceImage.Width, sourceImage.Height); // Create a new Bitmap object to hold the grayscale version of the source image
 
+                // Loop through each pixel in the source image
                 for (int x = 0; x < sourceImage.Width; x++)
                 {
                     for (int y = 0; y < sourceImage.Height; y++)
                     {
-                        Color pixel = sourceImage.GetPixel(x, y);
-                        int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B);
-                        grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue));
+                        Color pixel = sourceImage.GetPixel(x, y); // Get the color of the current pixel
+                        int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B); // Calculate the grayscale value for the pixel using the specified weights
+                        grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue)); // Set the corresponding pixel in the grayscale image to the calculated gray value
                     }
                 }
 
-                Filtering spatialFiltering = new Filtering(grayscaleImage);
-                spatialFiltering.Text = "Spatial Filtering";
-                spatialFiltering.displayGrayscaleImage(grayscaleImage);
-                spatialFiltering.Show();
+                Filtering spatialFiltering = new Filtering(grayscaleImage); // Create a new Filtering object with the grayscale image
+                spatialFiltering.Text = "Spatial Filtering"; // Set the text for the spatialFiltering object
+                spatialFiltering.displayGrayscaleImage(grayscaleImage); // Display the grayscale image using the displayGrayscaleImage method
+                spatialFiltering.Show(); // Show the spatialFiltering form
             }
         }
     }
