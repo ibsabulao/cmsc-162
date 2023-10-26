@@ -36,6 +36,7 @@ namespace Image_Processing
             InitializeComponent();
         }
 
+        // function to load image file
         private void ViewImage_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -71,6 +72,7 @@ namespace Image_Processing
             }
         }
 
+        // function to load pcx file
         private void ViewPCX_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog_1 = new OpenFileDialog())
@@ -147,6 +149,7 @@ namespace Image_Processing
             }
         }
 
+        // function to extract and display PCX header information
         private void PCX_DisplayHeaderInfo(byte[] header)
         {
             string manufacturer;
@@ -227,6 +230,7 @@ namespace Image_Processing
             }
         }
 
+        // using RLE to decode the pixel data
         public static byte[] DecodeRLE(byte[] data)
         {
             using (MemoryStream decompressedStream = new MemoryStream())
@@ -234,6 +238,7 @@ namespace Image_Processing
                 int index = 0;
                 int count;
 
+                // traverse through pixel data to decompress
                 while (index < data.Length)
                 {
                     byte currentByte = data[index++];
@@ -465,111 +470,148 @@ namespace Image_Processing
             Blue
         }
 
+        // function for greyscale transformation
         private void Grayscale_Click(object sender, EventArgs e)
         {
-            if (originalImage != null)
+            if (originalImage != null) // if an image is loaded
             {
-                maxFrequency.Text = null;
+                maxFrequency.Text = null; // remove color channel related text
                 channelLabel.Text = "Grayscale Transformation";
+
+                // store original in a separate variable
                 Bitmap sourceImage = originalImage;
+
+                // new bitmap for the grayscale image
                 Bitmap grayscaleImage = new Bitmap(sourceImage.Width, sourceImage.Height);
 
+                // iterate through each pixel
                 for (int x = 0; x < sourceImage.Width; x++)
                 {
                     for (int y = 0; y < sourceImage.Height; y++)
                     {
-                        Color pixel = sourceImage.GetPixel(x, y);
-                        int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B);
-                        grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue));
+                        Color pixel = sourceImage.GetPixel(x, y); // get color of pixel
+                        int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B); // calculate grayscale value
+                        grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue)); // set pixel w the grayscale value
                     }
                 }
 
+                // display the transformed image
                 imageChannel.Image = grayscaleImage;
 
             }
         }
 
+        // function for negative transformation 
         private void Negative_Click(object sender, EventArgs e)
         {
-            if (originalImage != null)
+            if (originalImage != null) // if an image is loaded
             {
-                maxFrequency.Text = null;
+                maxFrequency.Text = null;  // remove color channel related text
                 channelLabel.Text = "Negative Transformation";
+
+                // store original in a separate variable
                 Bitmap sourceImage = originalImage;
+
+                // new bitmap for the negative image
                 Bitmap negativeImage = new Bitmap(sourceImage.Width, sourceImage.Height);
 
+                // iterate through each pixel
                 for (int x = 0; x < sourceImage.Width; x++)
                 {
                     for (int y = 0; y < sourceImage.Height; y++)
                     {
-                        Color pixel = sourceImage.GetPixel(x, y);
-                        Color negativePixel = Color.FromArgb(255 - pixel.R, 255 - pixel.G, 255 - pixel.B);
-                        negativeImage.SetPixel(x, y, negativePixel);
+                        Color pixel = sourceImage.GetPixel(x, y); // get color
+                        Color negativePixel = Color.FromArgb(255 - pixel.R, 255 - pixel.G, 255 - pixel.B); // calculate negative value
+                        negativeImage.SetPixel(x, y, negativePixel); // set pixel w the negative value
                     }
                 }
 
-                imageChannel.Image = negativeImage;
+                // display the transformed image
+                imageChannel.Image = negativeImage; 
 
             }
         }
 
+        // function for black and white transformation
         private void BW_Scroll(object sender, EventArgs e)
         {
-            if (originalImage != null)
+            if (originalImage != null) // if an image is loaded
             {
-                maxFrequency.Text = null;
+                maxFrequency.Text = null;  // remove color channel related text
                 channelLabel.Text = "Black and White";
-                Bitmap sourceImage = originalImage;
-                Bitmap bw_image = new Bitmap(sourceImage.Width, sourceImage.Height);
                 int threshold = bw_trackbar.Value;
 
+                // store original in a separate variable
+                Bitmap sourceImage = originalImage;
+
+                // new bitmap for the bw image
+                Bitmap bw_image = new Bitmap(sourceImage.Width, sourceImage.Height);
+
+                // iterate through each pixel
                 for (int y = 0; y < sourceImage.Height; y++)
                 {
                     for (int x = 0; x < sourceImage.Width; x++)
                     {
-                        Color pixel = sourceImage.GetPixel(x, y);
-                        int average = (pixel.R + pixel.G + pixel.B) / 3;
+                        Color pixel = sourceImage.GetPixel(x, y); // get color
 
+                        // calculate bw value
+                        int average = (pixel.R + pixel.G + pixel.B) / 3;
                         Color bwColor = (average >= threshold) ? Color.White : Color.Black;
-                        bw_image.SetPixel(x, y, bwColor);
+
+                        bw_image.SetPixel(x, y, bwColor); // set pixel w bw value
                     }
                 }
 
+                // display the transformed image
                 imageChannel.Image = bw_image;
             }
         }
 
+        // function for gamma transformation
         private void GammaTransform_Click(object sender, EventArgs e)
         {
+            // if an image is loaded and gamma textbox is not empty
             if (originalImage != null && !string.IsNullOrEmpty(gamma_textbox.Text))
             {
-                maxFrequency.Text = null;
+                maxFrequency.Text = null;  // remove color channel related text
                 channelLabel.Text = "Gamma Transformation";
+
+                // store original in a separate variable
                 Bitmap sourceImage = originalImage;
+
+                // new bitmap for the gamma image
                 Bitmap gamma_img = new Bitmap(sourceImage.Width, sourceImage.Height);
+
+                // convert input string to float
                 float gamma = float.Parse(gamma_textbox.Text);
 
+                // iterate through each pixel
                 for (int x = 0; x < sourceImage.Width; x++)
                 {
                     for (int y = 0; y < sourceImage.Height; y++)
                     {
-                        Color pixel = sourceImage.GetPixel(x, y);
+                        Color pixel = sourceImage.GetPixel(x, y); // get color
 
+                        // calculate gamma value
                         int gray = (int)(0.299 * pixel.R + 0.587 * pixel.G + 0.114 * pixel.B);
                         int newGray = (int)(Math.Pow(gray / 255.0, gamma) * 255);
-
                         Color newPixel = Color.FromArgb(newGray, newGray, newGray);
-                        gamma_img.SetPixel(x, y, newPixel);
+
+                        gamma_img.SetPixel(x, y, newPixel); // set pixel with gamma value
                     }
                 }
 
+                // display the transformed image
                 imageChannel.Image = gamma_img;
             }
         }
 
+        // ensures that only numbers and one decimal point can be input in the gamma textbox
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            maxFrequency.Text = null;
+            maxFrequency.Text = null; // remove color channel related text
+
+            // only allow numbers and period
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
                 (e.KeyChar != '.'))
             {
