@@ -1,4 +1,13 @@
-﻿using System;
+﻿/* This form will implement the following smoothing filters, sharpening filters, and gradients
+ * 1. Averaging Filter
+ * 2. Median Filter
+ * 3. Highpass Filtering with Laplacian operator
+ * 4. Unsharp masking
+ * 5. Highboost Filtering (indicating the amplification parameter)
+ * 6. Gradient using Sobel magnitude operator
+ */
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
