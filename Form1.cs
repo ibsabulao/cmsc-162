@@ -12,37 +12,21 @@ namespace Image_Processing
 {
     public partial class Form1 : Form
     {
-        // bitsPerPixel: Number of bits per pixel in the PCX image.
         private byte bitsPerPixel;
-
-        // xMin, yMin, xMax, yMax: Dimensions of the window in the PCX image.
         private int xMin;
         private int yMin;
         private int xMax;
         private int yMax;
-
-        // bytesPerLine: Number of bytes per scanline in the PCX image.
         private int bytesPerLine;
-
-        // pcxData: Byte array containing PCX image data.
         private byte[]? pcxData;
-
-        // originalImage: Bitmap representing the original image.
         private Bitmap? originalImage;
-
-        // redChannelImage, greenChannelImage, blueChannelImage: Bitmaps representing color channel images.
         private Bitmap? redChannelImage;
         private Bitmap? greenChannelImage;
         private Bitmap? blueChannelImage;
-
-        // histogramPictureBox: PictureBox used for displaying histograms.
         private PictureBox? histogramPictureBox;
-
-        // maxFrequencyIntensity: Intensity value that has the maximum count of pixels in a histogram.
         private int maxFrequencyIntensity = -1;
-
-        // maxCount: Maximum count of pixels in a histogram.
         private int maxCount;
+        private string? selectedFilePath;
 
         // Create a new form to display the histogram
         Form histogramForm = new Form();
@@ -70,7 +54,7 @@ namespace Image_Processing
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     // Get the path of the selected image file.
-                    string selectedFilePath = openFileDialog.FileName;
+                    selectedFilePath = openFileDialog.FileName;
 
                     try
                     {
@@ -115,7 +99,7 @@ namespace Image_Processing
                 if (openFileDialog_1.ShowDialog() == DialogResult.OK)
                 {
                     // Get the path of the selected PCX image file.
-                    string selectedFilePath = openFileDialog_1.FileName;
+                    selectedFilePath = openFileDialog_1.FileName;
 
                     try
                     {
@@ -1375,6 +1359,323 @@ namespace Image_Processing
                 }
                 Bitmap midpoint = ApplyMidpointFilter(degradedImg);
                 imageChannel.Image = midpoint;
+            }
+        }
+
+        // ---------------- RLE COMPRESSION ----------------
+
+        private void RLECompression_click(object sender, EventArgs e)
+        {
+            if (originalImage != null && selectedFilePath != null && pcxData != null)
+            {
+                // Display the original grayscale image in the originalGrayscale PictureBox.
+                imageChannel.Image = originalImage;
+
+                string imagePath = selectedFilePath;
+
+                // Read the image file into a byte array
+                byte[] imageData = File.ReadAllBytes(imagePath);
+
+                // Perform RLE compression on pixel data
+                byte[] compressedData = DecodeRLE(pcxData);
+
+                // Display the compression ratio
+                double compressionRatio = (double)pcxData.Length / compressedData.Length;
+
+                MessageBox.Show($"Compression complete!\nOriginal Size: {pcxData.Length} bytes\nCompressed Size: {compressedData.Length} bytes\nCompression Ratio: {compressionRatio:F2}\n",
+                        "RLE Compression Results", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else if (originalImage != null && selectedFilePath != null)
+            {
+                // Display the original grayscale image in the originalGrayscale PictureBox.
+                imageChannel.Image = originalImage;
+
+                string imagePath = selectedFilePath;
+
+                // Read the image file into a byte array
+                byte[] imageData = File.ReadAllBytes(imagePath);
+
+                // Perform RLE compression on pixel data
+                byte[] compressedData = CompressRLE(imageData);
+
+                // Display the compression ratio
+                double compressionRatio = (double)imageData.Length / compressedData.Length;
+
+                MessageBox.Show($"Compression complete!\nOriginal Size: {imageData.Length} bytes\nCompressed Size: {compressedData.Length} bytes\nCompression Ratio: {compressionRatio:F2}\n",
+                        "Compression Results", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private byte[] CompressRLE(byte[] data)
+        {
+            using (MemoryStream compressedStream = new MemoryStream())
+            {
+                int index = 0;
+                int n = data.Length;
+
+                while (index < n)
+                {
+                    byte currentByte = data[index];
+                    int runLength = 1;
+
+                    // Check for a run of identical bytes (pixels)
+                    while (index < n - 1 && data[index + 1] == currentByte && runLength < 255)
+                    {
+                        runLength++;
+                        index++;
+                    }
+
+                    // Write the run to the compressed stream
+                    compressedStream.WriteByte((byte)runLength);
+                    compressedStream.WriteByte(currentByte);
+
+                    // Move to the next pixel
+                    index++;
+                }
+
+                return compressedStream.ToArray();
+            }
+        }
+
+        // ---------------- HUFFMAN CODING COMPRESSION ----------------
+        private void huffmanCompression_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null && pcxData != null)
+            {
+                // Display the original grayscale image in the originalGrayscale PictureBox.
+                imageChannel.Image = originalImage;
+
+                // Perform Huffman compression on pixel data
+                byte[] compressedData = CompressHuffman(pcxData);
+
+                // Display the compression ratio
+                double compressionRatio = (double)pcxData.Length / compressedData.Length;
+
+                MessageBox.Show($"Compression complete!\nOriginal Size: {pcxData.Length} bytes\nCompressed Size: {compressedData.Length} bytes\nCompression Ratio: {compressionRatio:F2}",
+                        "Compression Results", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else if (originalImage != null && selectedFilePath != null)
+            {
+                // Display the original grayscale image in the originalGrayscale PictureBox.
+                imageChannel.Image = originalImage;
+
+                string imagePath = selectedFilePath;
+
+                // Read the image file into a byte array
+                byte[] imageData = File.ReadAllBytes(imagePath);
+
+                // Perform Huffman compression on pixel data
+                byte[] compressedData = CompressHuffman(imageData);
+
+                // Display the compression ratio
+                double compressionRatio = (double)imageData.Length / compressedData.Length;
+
+                MessageBox.Show($"Compression complete!\nOriginal Size: {imageData.Length} bytes\nCompressed Size: {compressedData.Length} bytes\nCompression Ratio: {compressionRatio:F2}",
+                        "Compression Results", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private byte[] CompressHuffman(byte[] data)
+        {
+            // Step 1: Calculate frequencies
+            Dictionary<byte, int> frequencies = CalculateFrequencies(data);
+
+            // Step 2: Build Huffman tree
+            HuffmanNode root = BuildHuffmanTree(frequencies);
+
+            // Step 3: Build encoding table
+            Dictionary<byte, string> encodingTable = BuildEncodingTable(root);
+
+            // Step 4: Encode data
+            List<string> encodedDataList = new List<string>();
+            foreach (byte symbol in data)
+            {
+                encodedDataList.Add(encodingTable[symbol]);
+            }
+
+            string encodedData = string.Join("", encodedDataList);
+
+            // Step 5: Convert encoded data to bytes
+            byte[] compressedData = ConvertToBytes(encodedData);
+
+            return compressedData;
+        }
+
+        private static Dictionary<byte, int> CalculateFrequencies(byte[] data)
+        {
+            Dictionary<byte, int> frequencies = new Dictionary<byte, int>();
+
+            foreach (byte symbol in data)
+            {
+                if (frequencies.ContainsKey(symbol))
+                {
+                    frequencies[symbol]++;
+                }
+                else
+                {
+                    frequencies[symbol] = 1;
+                }
+            }
+
+            return frequencies;
+        }
+
+        private static HuffmanNode BuildHuffmanTree(Dictionary<byte, int> frequencies)
+        {
+            PriorityQueue<HuffmanNode> priorityQueue = new PriorityQueue<HuffmanNode>();
+
+            foreach (var kvp in frequencies)
+            {
+                priorityQueue.Enqueue(new HuffmanNode(kvp.Key, kvp.Value));
+            }
+
+            while (priorityQueue.Count > 1)
+            {
+                HuffmanNode left = priorityQueue.Dequeue();
+                HuffmanNode right = priorityQueue.Dequeue();
+                HuffmanNode mergedNode = new HuffmanNode(left.Frequency + right.Frequency, left, right);
+                priorityQueue.Enqueue(mergedNode);
+            }
+
+            return priorityQueue.Dequeue();
+        }
+
+        private static Dictionary<byte, string> BuildEncodingTable(HuffmanNode root)
+        {
+            Dictionary<byte, string> encodingTable = new Dictionary<byte, string>();
+            BuildEncodingTableRecursive(root, "", encodingTable);
+            return encodingTable;
+        }
+
+        private static void BuildEncodingTableRecursive(HuffmanNode node, string currentCode, Dictionary<byte, string> encodingTable)
+        {
+            if (node.Symbol.HasValue)
+            {
+                encodingTable[node.Symbol.Value] = currentCode;
+            }
+            else
+            {
+                BuildEncodingTableRecursive(node.Left, currentCode + "0", encodingTable);
+                BuildEncodingTableRecursive(node.Right, currentCode + "1", encodingTable);
+            }
+        }
+
+        private static byte[] ConvertToBytes(string encodedData)
+        {
+            int numBytes = (int)Math.Ceiling(encodedData.Length / 8.0);
+            byte[] result = new byte[numBytes];
+
+            for (int i = 0; i < numBytes; i++)
+            {
+                int startIndex = i * 8;
+                int endIndex = Math.Min(startIndex + 8, encodedData.Length);
+                string byteString = encodedData.Substring(startIndex, endIndex - startIndex).PadRight(8, '0');
+                result[i] = Convert.ToByte(byteString, 2);
+            }
+
+            return result;
+        }
+
+        public class PriorityQueue<T> where T : IComparable<T>
+        {
+            private List<T> heap;
+
+            public int Count => heap.Count;
+
+            public PriorityQueue()
+            {
+                heap = new List<T>();
+            }
+
+            public void Enqueue(T item)
+            {
+                heap.Add(item);
+                int currentIndex = heap.Count - 1;
+
+                while (currentIndex > 0)
+                {
+                    int parentIndex = (currentIndex - 1) / 2;
+                    if (heap[currentIndex].CompareTo(heap[parentIndex]) >= 0)
+                    {
+                        break;
+                    }
+
+                    Swap(currentIndex, parentIndex);
+                    currentIndex = parentIndex;
+                }
+            }
+
+            public T Dequeue()
+            {
+                if (heap.Count == 0)
+                {
+                    throw new InvalidOperationException("Priority queue is empty.");
+                }
+
+                T result = heap[0];
+                heap[0] = heap[heap.Count - 1];
+                heap.RemoveAt(heap.Count - 1);
+
+                int currentIndex = 0;
+                while (true)
+                {
+                    int leftChildIndex = currentIndex * 2 + 1;
+                    int rightChildIndex = currentIndex * 2 + 2;
+
+                    if (leftChildIndex >= heap.Count)
+                    {
+                        break;
+                    }
+
+                    int smallerChildIndex = leftChildIndex;
+                    if (rightChildIndex < heap.Count && heap[rightChildIndex].CompareTo(heap[leftChildIndex]) < 0)
+                    {
+                        smallerChildIndex = rightChildIndex;
+                    }
+
+                    if (heap[currentIndex].CompareTo(heap[smallerChildIndex]) <= 0)
+                    {
+                        break;
+                    }
+
+                    Swap(currentIndex, smallerChildIndex);
+                    currentIndex = smallerChildIndex;
+                }
+
+                return result;
+            }
+
+            private void Swap(int index1, int index2)
+            {
+                T temp = heap[index1];
+                heap[index1] = heap[index2];
+                heap[index2] = temp;
+            }
+        }
+
+        public class HuffmanNode : IComparable<HuffmanNode>
+        {
+            public byte? Symbol { get; set; }
+            public int Frequency { get; set; }
+            public HuffmanNode Left { get; set; }
+            public HuffmanNode Right { get; set; }
+
+            public HuffmanNode(byte? symbol, int frequency)
+            {
+                Symbol = symbol;
+                Frequency = frequency;
+            }
+
+            public HuffmanNode(int frequency, HuffmanNode left, HuffmanNode right)
+            {
+                Frequency = frequency;
+                Left = left;
+                Right = right;
+            }
+
+            public int CompareTo(HuffmanNode other)
+            {
+                return Frequency - other.Frequency;
             }
         }
     }
