@@ -48,6 +48,7 @@ namespace Image_Processing
         public Form1()
         {
             InitializeComponent();
+            imageLabel.Text = "";
         }
 
         // ViewImage_Click event handler is triggered when the "View Image" button is clicked.
@@ -79,8 +80,6 @@ namespace Image_Processing
                         // Clear any previously displayed image channel and labels.
                         imageChannel.Image = null;
                         originalImageLabel.Text = "Original Image";
-                        channelLabel.Text = null;
-                        maxFrequency.Text = null;
 
                         // Set tooltips for the PictureBox and imageChannel PictureBox to show intensity information.
                         ToolTip toolTip = new ToolTip();
@@ -125,8 +124,6 @@ namespace Image_Processing
                             // Clear any existing information and loaded images.
                             PCXheaderInfoBox.Clear();
                             originalImageLabel.Text = "Original PCX Image";
-                            channelLabel.Text = null;
-                            maxFrequency.Text = null;
 
                             // Read and display the PCX image header information.
                             byte[] header = new byte[128];
@@ -304,17 +301,13 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
-                maxFrequency.Text = null; // Clear the text in the maxFrequency label.
+                imageLabel.Text = "Red Channel";
                 redChannelImage = SplitChannel(originalImage, ColorChannel.Red); // Extract the Red channel from the original image and store it in redChannelImage.
-                channelLabel.Text = "Red Channel"; // Update the label to indicate the currently displayed channel.
                 histogramForm.Text = "Red Channel Histogram"; // Update the title of the histogramForm
                 imageChannel.Image = redChannelImage; // Display the Red channel image in the imageChannel PictureBox.
 
                 // Call the modified ShowHistogram method and get the histogram colors
                 Color[] histogramColors = ShowHistogram(redChannelImage); // Call a modified ShowHistogram method to display the histogram for the Red channel.
-
-                // Display information about the maximum pixel count in the maxFrequency label.
-                maxFrequency.Text = "Intensity that has the Max Count of Pixels: " + maxFrequencyIntensity + "\r\nMax Count of Pixels: " + maxCount;
             }
         }
 
@@ -323,17 +316,13 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
-                maxFrequency.Text = null; // Clear the text in the maxFrequency label.
+                imageLabel.Text = "Green Channel";
                 greenChannelImage = SplitChannel(originalImage, ColorChannel.Green); // Extract the Green channel from the original image and store it in greenChannelImage.
-                channelLabel.Text = "Green Channel"; // Update the label to indicate the currently displayed channel.
                 histogramForm.Text = "Green Channel Histogram"; // Update the title of the histogramForm.
                 imageChannel.Image = greenChannelImage; // Display the Green channel image in the imageChannel PictureBox.
 
                 // Call the modified ShowHistogram method and get the histogram colors
                 Color[] histogramColors = ShowHistogram(greenChannelImage);
-
-                // Display information about the maximum pixel count in the maxFrequency label.
-                maxFrequency.Text = "Intensity that has the Max Count of Pixels: " + maxFrequencyIntensity + "\r\nMax Count of Pixels: " + maxCount;
             }
         }
 
@@ -342,16 +331,12 @@ namespace Image_Processing
         {
             if (originalImage != null)
             {
-                maxFrequency.Text = null; // Clear the text in the maxFrequency label.
+                imageLabel.Text = "Blue Channel";
                 blueChannelImage = SplitChannel(originalImage, ColorChannel.Blue); // Extract the Blue channel from the original image and store it in blueChannelImage.
-                channelLabel.Text = "Blue Channel"; // Update the label to indicate the currently displayed channel.
                 imageChannel.Image = blueChannelImage; // Display the Blue channel image in the imageChannel PictureBox.
 
                 // Call the modified ShowHistogram method and get the histogram colors
                 Color[] histogramColors = ShowHistogram(blueChannelImage);
-
-                // Display information about the maximum pixel count in the maxFrequency label.
-                maxFrequency.Text = "Intensity that has the Max Count of Pixels: " + maxFrequencyIntensity + "\r\nMax Count of Pixels: " + maxCount;
             }
         }
 
@@ -531,9 +516,7 @@ namespace Image_Processing
         {
             if (originalImage != null) // if an image is loaded
             {
-                maxFrequency.Text = null; // remove color channel related text
-                channelLabel.Text = "Grayscale Transformation";
-
+                imageLabel.Text = "Grayscale";
                 // store original in a separate variable
                 Bitmap sourceImage = originalImage;
 
@@ -562,9 +545,7 @@ namespace Image_Processing
         {
             if (originalImage != null) // if an image is loaded
             {
-                maxFrequency.Text = null;  // remove color channel related text
-                channelLabel.Text = "Negative Transformation";
-
+                imageLabel.Text = "Negative";
                 // store original in a separate variable
                 Bitmap sourceImage = originalImage;
 
@@ -593,8 +574,7 @@ namespace Image_Processing
         {
             if (originalImage != null) // if an image is loaded
             {
-                maxFrequency.Text = null;  // remove color channel related text
-                channelLabel.Text = "Black and White";
+                imageLabel.Text = "Black and White";
                 int threshold = bw_trackbar.Value;
 
                 // store original in a separate variable
@@ -629,9 +609,7 @@ namespace Image_Processing
             // if an image is loaded and gamma textbox is not empty
             if (originalImage != null && !string.IsNullOrEmpty(gamma_textbox.Text))
             {
-                maxFrequency.Text = null;  // remove color channel related text
-                channelLabel.Text = "Gamma Transformation";
-
+                imageLabel.Text = "Gamma Transform";
                 // store original in a separate variable
                 Bitmap sourceImage = originalImage;
 
@@ -665,8 +643,6 @@ namespace Image_Processing
         // ensures that only numbers and one decimal point can be input in the gamma textbox
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            maxFrequency.Text = null; // remove color channel related text
-
             // only allow numbers and period
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
                 (e.KeyChar != '.'))
@@ -706,6 +682,277 @@ namespace Image_Processing
                 spatialFiltering.displayGrayscaleImage(grayscaleImage); // Display the grayscale image using the displayGrayscaleImage method
                 spatialFiltering.Show(); // Show the spatialFiltering form
             }
+        }
+
+        // Event handler for the originalImage_Click event.
+        private void originalImage_Click(object sender, EventArgs e)
+        {
+            // Display the original grayscale image in the originalGrayscale PictureBox.
+            imageChannel.Image = originalImage;
+        }
+
+        // Button for Salt and Pepper Noise
+        private void saltPepper_Click(object sender, EventArgs e)
+        {
+            double saltProbability;
+            double pepperProbability;
+
+            if (double.TryParse(this.saltProb.Text, out saltProbability) && double.TryParse(this.pepperProb.Text, out pepperProbability))
+            {
+                if (saltProbability <= 0.5 && pepperProbability <= 0.5)
+                {
+                    // Check if the originalImage has been loaded
+                    if (originalImage != null)
+                    {
+                        Bitmap sourceImage = originalImage; // Create a new Bitmap object to hold the source image
+                        Bitmap grayscaleImage = new Bitmap(sourceImage.Width, sourceImage.Height); // Create a new Bitmap object to hold the grayscale version of the source image
+
+                        // Loop through each pixel in the source image
+                        for (int x = 0; x < sourceImage.Width; x++)
+                        {
+                            for (int y = 0; y < sourceImage.Height; y++)
+                            {
+                                Color pixel = sourceImage.GetPixel(x, y); // Get the color of the current pixel
+                                int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B); // Calculate the grayscale value for the pixel using the specified weights
+                                grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue)); // Set the corresponding pixel in the grayscale image to the calculated gray value
+                            }
+                        }
+
+                        // Set the label to indicate the applied noise
+                        imageLabel.Text = "Salt-and-Pepper Noise";
+
+                        int w = grayscaleImage.Width;
+                        int h = grayscaleImage.Height;
+
+                        BitmapData imageData = grayscaleImage.LockBits(
+                            new Rectangle(0, 0, w, h),
+                            ImageLockMode.ReadOnly,
+                            PixelFormat.Format24bppRgb);
+
+                        int bytes = imageData.Stride * imageData.Height;
+                        byte[] buffer = new byte[bytes];
+                        byte[] result = new byte[bytes];
+                        Marshal.Copy(imageData.Scan0, buffer, 0, bytes);
+                        grayscaleImage.UnlockBits(imageData);
+
+                        Random rnd = new Random();
+                        double unchangedProbability = 1 - (saltProbability + pepperProbability);
+
+                        for (int i = 0; i < bytes; i += 3)
+                        {
+                            double rand = rnd.NextDouble();
+
+                            if (rand < saltProbability)
+                            {
+                                // Salt noise
+                                result[i] = 255; // R channel
+                                result[i + 1] = 255; // G channel
+                                result[i + 2] = 255; // B channel
+                            }
+                            else if (rand > (1 - pepperProbability))
+                            {
+                                // Pepper noise
+                                result[i] = 0; // R channel
+                                result[i + 1] = 0; // G channel
+                                result[i + 2] = 0; // B channel
+                            }
+                            else
+                            {
+                                // Unchanged
+                                result[i] = buffer[i];
+                                result[i + 1] = buffer[i + 1];
+                                result[i + 2] = buffer[i + 2];
+                            }
+                        }
+
+                        Bitmap resultImage = new Bitmap(w, h);
+
+                        BitmapData resultData = resultImage.LockBits(
+                            new Rectangle(0, 0, w, h),
+                            ImageLockMode.WriteOnly,
+                            PixelFormat.Format24bppRgb);
+
+                        Marshal.Copy(result, 0, resultData.Scan0, bytes);
+                        resultImage.UnlockBits(resultData);
+
+                        // Display the image with salt and pepper noise
+                        imageChannel.Image = resultImage;
+                    }
+                }
+                else if (saltProbability >= 0.6 || pepperProbability >= 0.6)
+                {
+                    MessageBox.Show("Salt and Pepper Noise probabilities must be less than or equal to 0.5.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                // Display a message if parsing fails (empty or non-numeric input)
+                MessageBox.Show("Please enter valid numeric values for Salt and Pepper Noise probabilities.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void gaussianNoise_Click(object sender, EventArgs e)
+        {
+            // Check if the originalImage has been loaded
+            if (originalImage != null)
+            {
+                Bitmap sourceImage = originalImage; // Create a new Bitmap object to hold the source image
+                Bitmap grayscaleImage = new Bitmap(sourceImage.Width, sourceImage.Height); // Create a new Bitmap object to hold the grayscale version of the source image
+
+                // Loop through each pixel in the source image
+                for (int x = 0; x < sourceImage.Width; x++)
+                {
+                    for (int y = 0; y < sourceImage.Height; y++)
+                    {
+                        Color pixel = sourceImage.GetPixel(x, y); // Get the color of the current pixel
+                        int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B); // Calculate the grayscale value for the pixel using the specified weights
+                        grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue)); // Set the corresponding pixel in the grayscale image to the calculated gray value
+                    }
+                }
+
+                // Set the label to indicate the applied noise
+                imageLabel.Text = "Salt-and-Pepper Noise";
+
+                int w = grayscaleImage.Width;
+                int h = grayscaleImage.Height;
+
+                BitmapData imageData = grayscaleImage.LockBits(
+                    new Rectangle(0, 0, w, h),
+                    ImageLockMode.ReadOnly,
+                    PixelFormat.Format24bppRgb);
+
+                int bytes = imageData.Stride * imageData.Height;
+                byte[] buffer = new byte[bytes];
+                byte[] result = new byte[bytes];
+                Marshal.Copy(imageData.Scan0, buffer, 0, bytes);
+                grayscaleImage.UnlockBits(imageData);
+
+                Random rnd = new Random();
+
+                // Set the parameters for Gaussian noise
+                double mean = 0; // Mean of the Gaussian distribution
+                double stdDev = 25; // Standard deviation of the Gaussian distribution
+
+                for (int i = 0; i < bytes; i += 3)
+                {
+                    // Generate random values from a Gaussian distribution
+                    double gaussianValue = GenerateGaussianNoise(rnd, mean, stdDev);
+
+                    // Add Gaussian noise to the pixel value
+                    int noisyValue = buffer[i] + (int)gaussianValue;
+
+                    // Ensure that the noisy value is within the valid range [0, 255]
+                    noisyValue = Math.Max(0, Math.Min(255, noisyValue));
+
+                    // Assign the noisy value to the result
+                    result[i] = (byte)noisyValue;
+                    result[i + 1] = (byte)noisyValue;
+                    result[i + 2] = (byte)noisyValue;
+                }
+
+                // Create a new image with the noisy data
+                Bitmap resultImage = new Bitmap(w, h);
+                BitmapData resultData = resultImage.LockBits(
+                    new Rectangle(0, 0, w, h),
+                    ImageLockMode.WriteOnly,
+                    PixelFormat.Format24bppRgb);
+
+                // Copy the noisy data to the result image
+                Marshal.Copy(result, 0, resultData.Scan0, bytes);
+                resultImage.UnlockBits(resultData);
+
+                // Display the image with salt and pepper noise
+                imageChannel.Image = resultImage;
+            }
+        }
+
+        // Function to generate random values from a Gaussian distribution
+        private double GenerateGaussianNoise(Random rand, double mean, double stdDev)
+        {
+            double u1 = 1.0 - rand.NextDouble();
+            double u2 = 1.0 - rand.NextDouble();
+            double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
+            return mean + stdDev * randStdNormal;
+        }
+
+        private void rayleighNoise_Click(object sender, EventArgs e)
+        {
+            // Check if the originalImage has been loaded
+            if (originalImage != null)
+            {
+                Bitmap sourceImage = originalImage; // Create a new Bitmap object to hold the source image
+                Bitmap grayscaleImage = new Bitmap(sourceImage.Width, sourceImage.Height); // Create a new Bitmap object to hold the grayscale version of the source image
+
+                // Loop through each pixel in the source image
+                for (int x = 0; x < sourceImage.Width; x++)
+                {
+                    for (int y = 0; y < sourceImage.Height; y++)
+                    {
+                        Color pixel = sourceImage.GetPixel(x, y); // Get the color of the current pixel
+                        int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B); // Calculate the grayscale value for the pixel using the specified weights
+                        grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue)); // Set the corresponding pixel in the grayscale image to the calculated gray value
+                    }
+                }
+
+                // Set the label to indicate the applied noise
+                imageLabel.Text = "Rayleigh Noise";
+
+                int w = grayscaleImage.Width;
+                int h = grayscaleImage.Height;
+
+                BitmapData imageData = grayscaleImage.LockBits(
+                    new Rectangle(0, 0, w, h),
+                    ImageLockMode.ReadOnly,
+                    PixelFormat.Format24bppRgb);
+
+                int bytes = imageData.Stride * imageData.Height;
+                byte[] buffer = new byte[bytes];
+                byte[] result = new byte[bytes];
+                Marshal.Copy(imageData.Scan0, buffer, 0, bytes);
+                grayscaleImage.UnlockBits(imageData);
+
+                Random rnd = new Random();
+
+                // Set the parameter for Rayleigh noise
+                double scale = 25; // Scale parameter for the Rayleigh distribution
+
+                for (int i = 0; i < bytes; i += 3)
+                {
+                    // Generate random values from a Rayleigh distribution
+                    double rayleighValue = GenerateRayleighNoise(rnd, scale);
+
+                    // Add Rayleigh noise to the pixel value
+                    int noisyValue = (int)(buffer[i] + rayleighValue);
+
+                    // Ensure that the noisy value is within the valid range [0, 255]
+                    noisyValue = Math.Max(0, Math.Min(255, noisyValue));
+
+                    // Assign the noisy value to the result
+                    result[i] = (byte)noisyValue;
+                    result[i + 1] = (byte)noisyValue;
+                    result[i + 2] = (byte)noisyValue;
+                }
+
+                Bitmap resultImage = new Bitmap(w, h);
+
+                BitmapData resultData = resultImage.LockBits(
+                    new Rectangle(0, 0, w, h),
+                    ImageLockMode.WriteOnly,
+                    PixelFormat.Format24bppRgb);
+
+                Marshal.Copy(result, 0, resultData.Scan0, bytes);
+                resultImage.UnlockBits(resultData);
+
+                // Display the image with Rayleigh noise
+                imageChannel.Image = resultImage;
+            }
+        }
+
+        // Function to generate random values from a Rayleigh distribution
+        private double GenerateRayleighNoise(Random rand, double scale)
+        {
+            double u = rand.NextDouble();
+            return scale * Math.Sqrt(-2.0 * Math.Log(1 - u));
         }
     }
 }

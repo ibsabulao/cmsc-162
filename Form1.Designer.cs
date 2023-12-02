@@ -36,7 +36,8 @@ namespace Image_Processing
             openImageFileToolStripMenuItem = new ToolStripMenuItem();
             openPCXFileToolStripMenuItem = new ToolStripMenuItem();
             menu2ToolStripMenuItem = new ToolStripMenuItem();
-            processToolStripMenuItem = new ToolStripMenuItem();
+            imageDegradationToolStripMenuItem = new ToolStripMenuItem();
+            imageRestorationToolStripMenuItem = new ToolStripMenuItem();
             filterToolStripMenuItem = new ToolStripMenuItem();
             spatialFiltering = new ToolStripMenuItem();
             animationToolStripMenuItem = new ToolStripMenuItem();
@@ -57,17 +58,29 @@ namespace Image_Processing
             Red = new Button();
             Green = new Button();
             Blue = new Button();
-            tableLayoutPanel3 = new TableLayoutPanel();
-            tableLayoutPanel4 = new TableLayoutPanel();
-            panel4 = new Panel();
-            maxFrequency = new Label();
-            imageChannel = new PictureBox();
-            channelLabel = new Label();
-            panel1 = new Panel();
             panel5 = new Panel();
-            PCXheaderInfoBox = new RichTextBox();
+            button4 = new Button();
+            label5 = new Label();
+            label6 = new Label();
+            pepperProb = new TextBox();
+            saltProb = new TextBox();
+            label7 = new Label();
+            panel8 = new Panel();
+            button6 = new Button();
+            button5 = new Button();
+            panel9 = new Panel();
+            button10 = new Button();
+            button8 = new Button();
+            button9 = new Button();
+            label8 = new Label();
+            panel1 = new Panel();
             originalImageLabel = new Label();
             ViewImage = new PictureBox();
+            PCXheaderInfoBox = new RichTextBox();
+            panel4 = new Panel();
+            imageLabel = new Label();
+            button7 = new Button();
+            imageChannel = new PictureBox();
             menuStrip1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
@@ -75,24 +88,24 @@ namespace Image_Processing
             panel6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)bw_trackbar).BeginInit();
             panel2.SuspendLayout();
-            tableLayoutPanel3.SuspendLayout();
-            tableLayoutPanel4.SuspendLayout();
+            panel5.SuspendLayout();
+            panel8.SuspendLayout();
+            panel9.SuspendLayout();
+            panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)ViewImage).BeginInit();
             panel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)imageChannel).BeginInit();
-            panel1.SuspendLayout();
-            panel5.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)ViewImage).BeginInit();
             SuspendLayout();
             // 
             // menuStrip1
             // 
             menuStrip1.BackColor = SystemColors.Menu;
             menuStrip1.ImageScalingSize = new Size(20, 20);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { menu1ToolStripMenuItem, menu2ToolStripMenuItem, processToolStripMenuItem, filterToolStripMenuItem, animationToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { menu1ToolStripMenuItem, menu2ToolStripMenuItem, filterToolStripMenuItem, animationToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Padding = new Padding(5, 2, 0, 2);
-            menuStrip1.Size = new Size(1328, 24);
+            menuStrip1.Size = new Size(1324, 24);
             menuStrip1.TabIndex = 0;
             menuStrip1.Text = "menuStrip1";
             // 
@@ -126,15 +139,21 @@ namespace Image_Processing
             // 
             // menu2ToolStripMenuItem
             // 
+            menu2ToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { imageDegradationToolStripMenuItem, imageRestorationToolStripMenuItem });
             menu2ToolStripMenuItem.Name = "menu2ToolStripMenuItem";
             menu2ToolStripMenuItem.Size = new Size(39, 20);
             menu2ToolStripMenuItem.Text = "Edit";
             // 
-            // processToolStripMenuItem
+            // imageDegradationToolStripMenuItem
             // 
-            processToolStripMenuItem.Name = "processToolStripMenuItem";
-            processToolStripMenuItem.Size = new Size(59, 20);
-            processToolStripMenuItem.Text = "Process";
+            imageDegradationToolStripMenuItem.Name = "imageDegradationToolStripMenuItem";
+            imageDegradationToolStripMenuItem.Size = new Size(170, 22);
+            // 
+            // imageRestorationToolStripMenuItem
+            // 
+            imageRestorationToolStripMenuItem.Name = "imageRestorationToolStripMenuItem";
+            imageRestorationToolStripMenuItem.Size = new Size(170, 22);
+            imageRestorationToolStripMenuItem.Text = "Image Restoration";
             // 
             // filterToolStripMenuItem
             // 
@@ -159,24 +178,24 @@ namespace Image_Processing
             // tableLayoutPanel1
             // 
             tableLayoutPanel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            tableLayoutPanel1.BackColor = SystemColors.ButtonFace;
+            tableLayoutPanel1.BackColor = SystemColors.ControlLight;
             tableLayoutPanel1.ColumnCount = 3;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 23.0263176F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30.0451813F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 46.9879532F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.6267948F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 51.3756F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 31.9976082F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 166F));
             tableLayoutPanel1.Controls.Add(tableLayoutPanel2, 0, 0);
-            tableLayoutPanel1.Controls.Add(tableLayoutPanel3, 2, 0);
-            tableLayoutPanel1.Controls.Add(panel1, 1, 0);
+            tableLayoutPanel1.Controls.Add(panel1, 2, 0);
+            tableLayoutPanel1.Controls.Add(panel4, 1, 0);
             tableLayoutPanel1.ForeColor = SystemColors.GrayText;
-            tableLayoutPanel1.Location = new Point(0, 22);
+            tableLayoutPanel1.Location = new Point(0, 26);
             tableLayoutPanel1.Margin = new Padding(3, 2, 3, 2);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 1;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel1.Size = new Size(1328, 752);
+            tableLayoutPanel1.Size = new Size(1668, 1114);
             tableLayoutPanel1.TabIndex = 1;
             // 
             // tableLayoutPanel2
@@ -185,14 +204,20 @@ namespace Image_Processing
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tableLayoutPanel2.Controls.Add(panel3, 0, 1);
             tableLayoutPanel2.Controls.Add(panel2, 0, 0);
+            tableLayoutPanel2.Controls.Add(panel5, 0, 2);
+            tableLayoutPanel2.Controls.Add(panel8, 0, 3);
+            tableLayoutPanel2.Controls.Add(panel9, 0, 4);
             tableLayoutPanel2.Location = new Point(2, 2);
-            tableLayoutPanel2.Margin = new Padding(2, 2, 2, 2);
+            tableLayoutPanel2.Margin = new Padding(2);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
-            tableLayoutPanel2.RowCount = 2;
+            tableLayoutPanel2.RowCount = 5;
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 14.4897957F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 23.4693871F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 122F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 45F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 173F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 62.0408173F));
-            tableLayoutPanel2.Size = new Size(301, 588);
+            tableLayoutPanel2.Size = new Size(273, 588);
             tableLayoutPanel2.TabIndex = 2;
             // 
             // panel3
@@ -201,10 +226,9 @@ namespace Image_Processing
             panel3.Controls.Add(label3);
             panel3.Controls.Add(label1);
             panel3.Controls.Add(bw_trackbar);
-            panel3.Dock = DockStyle.Fill;
-            panel3.Location = new Point(3, 227);
+            panel3.Location = new Point(3, 97);
             panel3.Name = "panel3";
-            panel3.Size = new Size(295, 358);
+            panel3.Size = new Size(267, 147);
             panel3.TabIndex = 4;
             // 
             // panel6
@@ -215,7 +239,7 @@ namespace Image_Processing
             panel6.Controls.Add(label4);
             panel6.Location = new Point(0, 85);
             panel6.Name = "panel6";
-            panel6.Size = new Size(295, 67);
+            panel6.Size = new Size(271, 67);
             panel6.TabIndex = 20;
             // 
             // button3
@@ -224,9 +248,9 @@ namespace Image_Processing
             button3.AutoSize = true;
             button3.BackColor = Color.DimGray;
             button3.ForeColor = SystemColors.ButtonHighlight;
-            button3.Location = new Point(156, 30);
+            button3.Location = new Point(152, 31);
             button3.Name = "button3";
-            button3.Size = new Size(113, 30);
+            button3.Size = new Size(101, 30);
             button3.TabIndex = 11;
             button3.Text = "Transform";
             button3.UseVisualStyleBackColor = false;
@@ -255,11 +279,12 @@ namespace Image_Processing
             // label4
             // 
             label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI", 9F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point);
             label4.ForeColor = SystemColors.ControlText;
             label4.Location = new Point(14, 4);
             label4.Margin = new Padding(2, 0, 2, 0);
             label4.Name = "label4";
-            label4.Size = new Size(132, 15);
+            label4.Size = new Size(144, 15);
             label4.TabIndex = 18;
             label4.Text = "Gamma Transformation\r\n";
             // 
@@ -278,21 +303,22 @@ namespace Image_Processing
             // label1
             // 
             label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 9F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point);
             label1.ForeColor = SystemColors.ControlText;
             label1.Location = new Point(17, 10);
             label1.Margin = new Padding(2, 0, 2, 0);
             label1.Name = "label1";
-            label1.Size = new Size(154, 15);
+            label1.Size = new Size(170, 15);
             label1.TabIndex = 15;
             label1.Text = "Black/White Transformation\r\n";
             // 
             // bw_trackbar
             // 
             bw_trackbar.Location = new Point(17, 41);
-            bw_trackbar.Margin = new Padding(2, 2, 2, 2);
+            bw_trackbar.Margin = new Padding(2);
             bw_trackbar.Maximum = 255;
             bw_trackbar.Name = "bw_trackbar";
-            bw_trackbar.Size = new Size(260, 45);
+            bw_trackbar.Size = new Size(240, 45);
             bw_trackbar.TabIndex = 13;
             bw_trackbar.TickFrequency = 15;
             bw_trackbar.ValueChanged += BW_Scroll;
@@ -304,10 +330,9 @@ namespace Image_Processing
             panel2.Controls.Add(Red);
             panel2.Controls.Add(Green);
             panel2.Controls.Add(Blue);
-            panel2.Dock = DockStyle.Fill;
             panel2.Location = new Point(3, 3);
             panel2.Name = "panel2";
-            panel2.Size = new Size(295, 218);
+            panel2.Size = new Size(267, 88);
             panel2.TabIndex = 3;
             // 
             // button2
@@ -316,7 +341,7 @@ namespace Image_Processing
             button2.AutoSize = true;
             button2.BackColor = Color.DarkSlateGray;
             button2.ForeColor = SystemColors.ButtonHighlight;
-            button2.Location = new Point(68, 114);
+            button2.Location = new Point(52, 44);
             button2.Name = "button2";
             button2.Size = new Size(82, 35);
             button2.TabIndex = 10;
@@ -330,7 +355,7 @@ namespace Image_Processing
             button1.AutoSize = true;
             button1.BackColor = Color.Gray;
             button1.ForeColor = SystemColors.ButtonHighlight;
-            button1.Location = new Point(155, 114);
+            button1.Location = new Point(144, 44);
             button1.Name = "button1";
             button1.Size = new Size(85, 35);
             button1.TabIndex = 9;
@@ -344,7 +369,7 @@ namespace Image_Processing
             Red.AutoSize = true;
             Red.BackColor = Color.FromArgb(192, 0, 0);
             Red.ForeColor = SystemColors.ButtonHighlight;
-            Red.Location = new Point(17, 78);
+            Red.Location = new Point(5, 3);
             Red.Name = "Red";
             Red.Size = new Size(85, 35);
             Red.TabIndex = 6;
@@ -358,7 +383,7 @@ namespace Image_Processing
             Green.AutoSize = true;
             Green.BackColor = Color.Green;
             Green.ForeColor = SystemColors.ButtonHighlight;
-            Green.Location = new Point(107, 78);
+            Green.Location = new Point(94, 3);
             Green.Name = "Green";
             Green.Size = new Size(83, 35);
             Green.TabIndex = 7;
@@ -372,7 +397,7 @@ namespace Image_Processing
             Blue.AutoSize = true;
             Blue.BackColor = Color.MidnightBlue;
             Blue.ForeColor = SystemColors.ButtonHighlight;
-            Blue.Location = new Point(196, 78);
+            Blue.Location = new Point(183, 3);
             Blue.Name = "Blue";
             Blue.Size = new Size(80, 35);
             Blue.TabIndex = 8;
@@ -380,105 +405,178 @@ namespace Image_Processing
             Blue.UseVisualStyleBackColor = false;
             Blue.Click += Blue_Click;
             // 
-            // tableLayoutPanel3
+            // panel5
             // 
-            tableLayoutPanel3.ColumnCount = 1;
-            tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 51.495018F));
-            tableLayoutPanel3.Controls.Add(tableLayoutPanel4, 0, 0);
-            tableLayoutPanel3.Location = new Point(706, 3);
-            tableLayoutPanel3.Name = "tableLayoutPanel3";
-            tableLayoutPanel3.RowCount = 1;
-            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel3.Size = new Size(619, 746);
-            tableLayoutPanel3.TabIndex = 4;
+            panel5.Controls.Add(button4);
+            panel5.Controls.Add(label5);
+            panel5.Controls.Add(label6);
+            panel5.Controls.Add(pepperProb);
+            panel5.Controls.Add(saltProb);
+            panel5.Controls.Add(label7);
+            panel5.Dock = DockStyle.Fill;
+            panel5.Location = new Point(3, 250);
+            panel5.Name = "panel5";
+            panel5.Size = new Size(267, 116);
+            panel5.TabIndex = 5;
             // 
-            // tableLayoutPanel4
+            // button4
             // 
-            tableLayoutPanel4.ColumnCount = 2;
-            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 59.3800964F));
-            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40.6199036F));
-            tableLayoutPanel4.Controls.Add(panel4, 0, 0);
-            tableLayoutPanel4.Location = new Point(3, 3);
-            tableLayoutPanel4.Name = "tableLayoutPanel4";
-            tableLayoutPanel4.RowCount = 1;
-            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel4.Size = new Size(613, 740);
-            tableLayoutPanel4.TabIndex = 0;
+            button4.Location = new Point(163, 58);
+            button4.Name = "button4";
+            button4.Size = new Size(101, 40);
+            button4.TabIndex = 20;
+            button4.Text = "Salt-and-Pepper Noise";
+            button4.UseVisualStyleBackColor = true;
+            button4.Click += saltPepper_Click;
             // 
-            // panel4
+            // label5
             // 
-            panel4.Controls.Add(maxFrequency);
-            panel4.Controls.Add(imageChannel);
-            panel4.Controls.Add(channelLabel);
-            panel4.Location = new Point(3, 3);
-            panel4.Name = "panel4";
-            panel4.Size = new Size(358, 336);
-            panel4.TabIndex = 0;
+            label5.AutoSize = true;
+            label5.Font = new Font("Segoe UI", 9F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point);
+            label5.ForeColor = SystemColors.ControlText;
+            label5.Location = new Point(16, 5);
+            label5.Margin = new Padding(2, 0, 2, 0);
+            label5.Name = "label5";
+            label5.Size = new Size(116, 15);
+            label5.TabIndex = 19;
+            label5.Text = "Image Degradation";
             // 
-            // maxFrequency
+            // label6
             // 
-            maxFrequency.AutoSize = true;
-            maxFrequency.Location = new Point(8, 305);
-            maxFrequency.Name = "maxFrequency";
-            maxFrequency.Size = new Size(0, 15);
-            maxFrequency.TabIndex = 1;
+            label6.AutoSize = true;
+            label6.Font = new Font("Segoe UI", 7F, FontStyle.Regular, GraphicsUnit.Point);
+            label6.ForeColor = SystemColors.ControlText;
+            label6.Location = new Point(16, 31);
+            label6.Margin = new Padding(2, 0, 2, 0);
+            label6.Name = "label6";
+            label6.Size = new Size(100, 12);
+            label6.TabIndex = 19;
+            label6.Text = "Salt Probability [0, 0.5]";
             // 
-            // imageChannel
+            // pepperProb
             // 
-            imageChannel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            imageChannel.Location = new Point(8, 36);
-            imageChannel.Name = "imageChannel";
-            imageChannel.Size = new Size(341, 250);
-            imageChannel.SizeMode = PictureBoxSizeMode.Zoom;
-            imageChannel.TabIndex = 0;
-            imageChannel.TabStop = false;
+            pepperProb.Location = new Point(16, 88);
+            pepperProb.Name = "pepperProb";
+            pepperProb.Size = new Size(129, 23);
+            pepperProb.TabIndex = 23;
+            pepperProb.KeyPress += textBox1_KeyPress;
             // 
-            // channelLabel
+            // saltProb
             // 
-            channelLabel.AutoSize = true;
-            channelLabel.Location = new Point(0, 0);
-            channelLabel.Margin = new Padding(4, 0, 4, 0);
-            channelLabel.Name = "channelLabel";
-            channelLabel.Size = new Size(0, 15);
-            channelLabel.TabIndex = 0;
+            saltProb.Location = new Point(16, 46);
+            saltProb.Name = "saltProb";
+            saltProb.Size = new Size(129, 23);
+            saltProb.TabIndex = 21;
+            saltProb.KeyPress += textBox1_KeyPress;
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Font = new Font("Segoe UI", 7F, FontStyle.Regular, GraphicsUnit.Point);
+            label7.ForeColor = SystemColors.ControlText;
+            label7.Location = new Point(16, 73);
+            label7.Margin = new Padding(2, 0, 2, 0);
+            label7.Name = "label7";
+            label7.Size = new Size(116, 12);
+            label7.TabIndex = 22;
+            label7.Text = "Pepper Probability [0, 0.5]";
+            // 
+            // panel8
+            // 
+            panel8.Controls.Add(button6);
+            panel8.Controls.Add(button5);
+            panel8.Dock = DockStyle.Fill;
+            panel8.Location = new Point(3, 372);
+            panel8.Name = "panel8";
+            panel8.Size = new Size(267, 39);
+            panel8.TabIndex = 6;
+            // 
+            // button6
+            // 
+            button6.BackColor = SystemColors.ControlLightLight;
+            button6.Location = new Point(145, 5);
+            button6.Name = "button6";
+            button6.Size = new Size(101, 31);
+            button6.TabIndex = 25;
+            button6.Text = "Rayleigh Noise";
+            button6.UseVisualStyleBackColor = false;
+            button6.Click += rayleighNoise_Click;
+            // 
+            // button5
+            // 
+            button5.BackColor = SystemColors.ControlLightLight;
+            button5.Location = new Point(38, 5);
+            button5.Name = "button5";
+            button5.Size = new Size(101, 31);
+            button5.TabIndex = 24;
+            button5.Text = "Gaussian Noise";
+            button5.UseVisualStyleBackColor = false;
+            button5.Click += gaussianNoise_Click;
+            // 
+            // panel9
+            // 
+            panel9.Controls.Add(button10);
+            panel9.Controls.Add(button8);
+            panel9.Controls.Add(button9);
+            panel9.Controls.Add(label8);
+            panel9.Dock = DockStyle.Fill;
+            panel9.Location = new Point(3, 417);
+            panel9.Name = "panel9";
+            panel9.Size = new Size(267, 168);
+            panel9.TabIndex = 7;
+            // 
+            // button10
+            // 
+            button10.BackColor = SystemColors.ControlLightLight;
+            button10.Location = new Point(87, 79);
+            button10.Name = "button10";
+            button10.Size = new Size(108, 43);
+            button10.TabIndex = 28;
+            button10.Text = "Order-Statistics Filter";
+            button10.UseVisualStyleBackColor = false;
+            // 
+            // button8
+            // 
+            button8.BackColor = SystemColors.ControlLightLight;
+            button8.Location = new Point(144, 30);
+            button8.Name = "button8";
+            button8.Size = new Size(108, 43);
+            button8.TabIndex = 27;
+            button8.Text = "Contraharmonic Filter";
+            button8.UseVisualStyleBackColor = false;
+            // 
+            // button9
+            // 
+            button9.BackColor = SystemColors.ControlLightLight;
+            button9.Location = new Point(30, 30);
+            button9.Name = "button9";
+            button9.Size = new Size(108, 43);
+            button9.TabIndex = 26;
+            button9.Text = "Geometric\r\nFilter";
+            button9.UseVisualStyleBackColor = false;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Font = new Font("Segoe UI", 9F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point);
+            label8.ForeColor = SystemColors.ControlText;
+            label8.Location = new Point(17, 9);
+            label8.Margin = new Padding(2, 0, 2, 0);
+            label8.Name = "label8";
+            label8.Size = new Size(111, 15);
+            label8.TabIndex = 26;
+            label8.Text = "Image Restoration";
             // 
             // panel1
             // 
-            panel1.BackColor = SystemColors.ButtonFace;
-            panel1.Controls.Add(panel5);
+            panel1.BackColor = SystemColors.ControlLight;
             panel1.Controls.Add(originalImageLabel);
             panel1.Controls.Add(ViewImage);
-            panel1.Location = new Point(308, 3);
+            panel1.Controls.Add(PCXheaderInfoBox);
+            panel1.Location = new Point(1136, 3);
             panel1.Name = "panel1";
-            panel1.Size = new Size(392, 746);
+            panel1.Size = new Size(239, 762);
             panel1.TabIndex = 5;
-            // 
-            // panel5
-            // 
-            panel5.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            panel5.AutoScroll = true;
-            panel5.Controls.Add(PCXheaderInfoBox);
-            panel5.Location = new Point(3, 311);
-            panel5.Name = "panel5";
-            panel5.Size = new Size(386, 431);
-            panel5.TabIndex = 3;
-            // 
-            // PCXheaderInfoBox
-            // 
-            PCXheaderInfoBox.BackColor = SystemColors.ButtonFace;
-            PCXheaderInfoBox.BorderStyle = BorderStyle.None;
-            PCXheaderInfoBox.Font = new Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
-            PCXheaderInfoBox.ForeColor = SystemColors.MenuText;
-            PCXheaderInfoBox.Location = new Point(0, 2);
-            PCXheaderInfoBox.Margin = new Padding(2, 2, 2, 2);
-            PCXheaderInfoBox.MaxLength = 21474;
-            PCXheaderInfoBox.MinimumSize = new Size(341, 250);
-            PCXheaderInfoBox.Name = "PCXheaderInfoBox";
-            PCXheaderInfoBox.ReadOnly = true;
-            PCXheaderInfoBox.ScrollBars = RichTextBoxScrollBars.None;
-            PCXheaderInfoBox.Size = new Size(386, 429);
-            PCXheaderInfoBox.TabIndex = 2;
-            PCXheaderInfoBox.Text = "";
             // 
             // originalImageLabel
             // 
@@ -491,33 +589,88 @@ namespace Image_Processing
             // ViewImage
             // 
             ViewImage.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            ViewImage.BackColor = SystemColors.ButtonFace;
-            ViewImage.Location = new Point(24, 42);
+            ViewImage.BackColor = SystemColors.ControlLight;
+            ViewImage.Location = new Point(3, 27);
             ViewImage.Margin = new Padding(3, 2, 3, 2);
-            ViewImage.MinimumSize = new Size(341, 250);
             ViewImage.Name = "ViewImage";
-            ViewImage.Size = new Size(341, 250);
+            ViewImage.Size = new Size(185, 162);
             ViewImage.SizeMode = PictureBoxSizeMode.Zoom;
             ViewImage.TabIndex = 1;
             ViewImage.TabStop = false;
+            // 
+            // PCXheaderInfoBox
+            // 
+            PCXheaderInfoBox.BackColor = SystemColors.ControlLight;
+            PCXheaderInfoBox.BorderStyle = BorderStyle.None;
+            PCXheaderInfoBox.Font = new Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            PCXheaderInfoBox.ForeColor = SystemColors.MenuText;
+            PCXheaderInfoBox.Location = new Point(3, 193);
+            PCXheaderInfoBox.Margin = new Padding(2);
+            PCXheaderInfoBox.MaxLength = 21474;
+            PCXheaderInfoBox.Name = "PCXheaderInfoBox";
+            PCXheaderInfoBox.ReadOnly = true;
+            PCXheaderInfoBox.ScrollBars = RichTextBoxScrollBars.None;
+            PCXheaderInfoBox.Size = new Size(185, 569);
+            PCXheaderInfoBox.TabIndex = 2;
+            PCXheaderInfoBox.Text = "";
+            // 
+            // panel4
+            // 
+            panel4.BackColor = SystemColors.Control;
+            panel4.Controls.Add(imageLabel);
+            panel4.Controls.Add(button7);
+            panel4.Controls.Add(imageChannel);
+            panel4.Location = new Point(280, 3);
+            panel4.Name = "panel4";
+            panel4.Size = new Size(850, 762);
+            panel4.TabIndex = 6;
+            // 
+            // imageLabel
+            // 
+            imageLabel.AutoSize = true;
+            imageLabel.Location = new Point(3, 3);
+            imageLabel.Name = "imageLabel";
+            imageLabel.Size = new Size(38, 15);
+            imageLabel.TabIndex = 2;
+            imageLabel.Text = "label9";
+            // 
+            // button7
+            // 
+            button7.Location = new Point(735, 3);
+            button7.Name = "button7";
+            button7.Size = new Size(115, 23);
+            button7.TabIndex = 1;
+            button7.Text = "Use Original Image";
+            button7.UseVisualStyleBackColor = true;
+            button7.Click += originalImage_Click;
+            // 
+            // imageChannel
+            // 
+            imageChannel.Anchor = AnchorStyles.None;
+            imageChannel.Location = new Point(185, 126);
+            imageChannel.Name = "imageChannel";
+            imageChannel.Size = new Size(423, 423);
+            imageChannel.SizeMode = PictureBoxSizeMode.Zoom;
+            imageChannel.TabIndex = 0;
+            imageChannel.TabStop = false;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ButtonFace;
-            ClientSize = new Size(1328, 791);
+            ClientSize = new Size(1324, 791);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(menuStrip1);
             ForeColor = SystemColors.ActiveBorder;
             MainMenuStrip = menuStrip1;
             Margin = new Padding(3, 2, 3, 2);
-            MinimumSize = new Size(1343, 498);
+            MaximizeBox = false;
+            MinimumSize = new Size(1340, 830);
             Name = "Form1";
             SizeGripStyle = SizeGripStyle.Hide;
-            StartPosition = FormStartPosition.WindowsDefaultBounds;
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "View";
-            WindowState = FormWindowState.Maximized;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
             tableLayoutPanel1.ResumeLayout(false);
@@ -529,15 +682,17 @@ namespace Image_Processing
             ((System.ComponentModel.ISupportInitialize)bw_trackbar).EndInit();
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
-            tableLayoutPanel3.ResumeLayout(false);
-            tableLayoutPanel4.ResumeLayout(false);
+            panel5.ResumeLayout(false);
+            panel5.PerformLayout();
+            panel8.ResumeLayout(false);
+            panel9.ResumeLayout(false);
+            panel9.PerformLayout();
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)ViewImage).EndInit();
             panel4.ResumeLayout(false);
             panel4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)imageChannel).EndInit();
-            panel1.ResumeLayout(false);
-            panel1.PerformLayout();
-            panel5.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)ViewImage).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -547,7 +702,6 @@ namespace Image_Processing
         private MenuStrip menuStrip1;
         private ToolStripMenuItem menu1ToolStripMenuItem;
         private ToolStripMenuItem menu2ToolStripMenuItem;
-        private ToolStripMenuItem processToolStripMenuItem;
         private ToolStripMenuItem filterToolStripMenuItem;
         private ToolStripMenuItem animationToolStripMenuItem;
         private TableLayoutPanel tableLayoutPanel1;
@@ -557,9 +711,6 @@ namespace Image_Processing
         private ToolStripMenuItem openPCXFileToolStripMenuItem;
         private TableLayoutPanel tableLayoutPanel2;
         private RichTextBox PCXheaderInfoBox;
-        private TableLayoutPanel tableLayoutPanel3;
-        private TableLayoutPanel tableLayoutPanel4;
-        private PictureBox imageChannel;
         private Panel panel2;
         private Button Red;
         private Button Green;
@@ -576,11 +727,28 @@ namespace Image_Processing
         private Label label4;
         private Button button3;
         private TextBox gamma_textbox;
-        private Panel panel4;
-        private Label channelLabel;
         private ToolStripMenuItem spatialFiltering;
-        private Panel panel5;
         private Panel panel6;
-        private Label maxFrequency;
+        private ToolStripMenuItem imageDegradationToolStripMenuItem;
+        private ToolStripMenuItem imageRestorationToolStripMenuItem;
+        private Panel panel4;
+        private PictureBox imageChannel;
+        private Button button4;
+        private Label label5;
+        private Label label8;
+        private Button button6;
+        private Button button5;
+        private TextBox pepperProb;
+        private Label label7;
+        private TextBox saltProb;
+        private Label label6;
+        private Button button7;
+        private Label imageLabel;
+        private Panel panel5;
+        private Panel panel8;
+        private Panel panel9;
+        private Button button8;
+        private Button button9;
+        private Button button10;
     }
 }
