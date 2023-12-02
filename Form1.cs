@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using static System.Net.Mime.MediaTypeNames;
 using System.Diagnostics.Metrics;
 using System.Xml.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Image_Processing
 {
@@ -45,6 +46,10 @@ namespace Image_Processing
 
         // Create a new form to display the histogram
         Form histogramForm = new Form();
+
+        // Degraded image
+        private Bitmap? degradedImg;
+
         public Form1()
         {
             InitializeComponent();
@@ -79,10 +84,11 @@ namespace Image_Processing
 
                         // Clear any previously displayed image channel and labels.
                         imageChannel.Image = null;
+                        degradedImg = null; // Empty if there's previous image.
                         originalImageLabel.Text = "Original Image";
 
                         // Set tooltips for the PictureBox and imageChannel PictureBox to show intensity information.
-                        ToolTip toolTip = new ToolTip();
+                        System.Windows.Forms.ToolTip toolTip = new System.Windows.Forms.ToolTip();
                         toolTip.SetToolTip(ViewImage, "Intensity: "); // Initial tooltip text for "ViewImage".
                         toolTip.SetToolTip(imageChannel, "Intensity: "); // Initial tooltip text for "imageChannel".
                     }
@@ -166,6 +172,7 @@ namespace Image_Processing
                             // Display the PCX image in the PictureBox control.
                             ViewImage.Image = originalImage;
                             imageChannel.Image = null; // Empty if there's a previously uploaded image.
+                            degradedImg = null; // Empty if there's previous image.
                         }
                     }
                     catch (Exception ex)
@@ -437,8 +444,25 @@ namespace Image_Processing
                     int barY = histHeight - barHeight;
 
                     // Draw the histogram bar for the channel
-                    Color channelColor = channelImage == redChannelImage ? Color.Pink :
-                                         channelImage == greenChannelImage ? Color.LightGreen : Color.LightBlue;
+                    // Determine the channel color
+                    Color channelColor;
+                    if (channelImage == redChannelImage)
+                    {
+                        channelColor = Color.Pink;
+                    }
+                    else if (channelImage == greenChannelImage)
+                    {
+                        channelColor = Color.LightGreen;
+                    }
+                    else if (channelImage == blueChannelImage)
+                    {
+                        channelColor = Color.LightBlue;
+                    }
+                    else
+                    {
+                        // If none of the three channels, use gray color
+                        channelColor = Color.Gray;
+                    }
 
                     g.FillRectangle(new SolidBrush(channelColor),
                         new Rectangle(i * (histWidth / 256), barY, histWidth / 256, barHeight)
@@ -464,7 +488,10 @@ namespace Image_Processing
                 }
 
                 histogramForm.Text = channelImage == redChannelImage ? "Red Channel Histogram" :
-                                    channelImage == greenChannelImage ? "Green Channel Histogram" : "Blue Channel Histogram";
+                                    channelImage == greenChannelImage ? "Green Channel Histogram" :
+                                    channelImage == blueChannelImage ? "Blue Channel Histogram" :
+                                    "Histogram";
+
                 histogramForm.Size = pictureBoxSize;
 
                 // Create the PictureBox for the histogram if it's not already created
@@ -564,7 +591,7 @@ namespace Image_Processing
                 }
 
                 // display the transformed image
-                imageChannel.Image = negativeImage; 
+                imageChannel.Image = negativeImage;
 
             }
         }
@@ -640,18 +667,30 @@ namespace Image_Processing
             }
         }
 
-        // ensures that only numbers and one decimal point can be input in the gamma textbox
+        // ensures that only numbers, negative symbol, and one decimal point can be input in the gamma textbox
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             // only allow numbers and period
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
-                (e.KeyChar != '.'))
+                (e.KeyChar != '.') && (e.KeyChar != '-'))
             {
                 e.Handled = true;
             }
 
             // only allow one decimal point
-            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+            if ((e.KeyChar == '.') && ((sender as System.Windows.Forms.TextBox).Text.IndexOf('.') > -1))
+            {
+                e.Handled = true;
+            }
+
+            // only allow negative values in q value
+            if (e.KeyChar == '-' && ((sender as System.Windows.Forms.TextBox) != qValue))
+            {
+                e.Handled = true;
+            }
+
+            // only allow - symbol at the start
+            if (e.KeyChar == '-' && ((sender as System.Windows.Forms.TextBox).Text.Length > 0 || ((sender as System.Windows.Forms.TextBox).SelectionStart > 0)))
             {
                 e.Handled = true;
             }
@@ -777,6 +816,9 @@ namespace Image_Processing
 
                         // Display the image with salt and pepper noise
                         imageChannel.Image = resultImage;
+                        // Store degraded image in separate variable for restoration
+                        degradedImg = resultImage;
+                        ShowHistogram(resultImage);
                     }
                 }
                 else if (saltProbability >= 0.6 || pepperProbability >= 0.6)
@@ -863,6 +905,9 @@ namespace Image_Processing
 
                 // Display the image with salt and pepper noise
                 imageChannel.Image = resultImage;
+                // Store degraded image in separate variable for restoration
+                degradedImg = resultImage;
+                ShowHistogram(resultImage);
             }
         }
 
@@ -945,6 +990,9 @@ namespace Image_Processing
 
                 // Display the image with Rayleigh noise
                 imageChannel.Image = resultImage;
+                // Store degraded image in separate variable for restoration
+                degradedImg = resultImage;
+                ShowHistogram(resultImage);
             }
         }
 
@@ -953,6 +1001,381 @@ namespace Image_Processing
         {
             double u = rand.NextDouble();
             return scale * Math.Sqrt(-2.0 * Math.Log(1 - u));
+        }
+
+        static Bitmap ApplyGeometricMeanFilter(Bitmap originalImage)
+        {
+            int width = originalImage.Width;
+            int height = originalImage.Height;
+
+            Bitmap restoredImage = new Bitmap(width, height);
+
+            int filterSize = 3;
+
+            for (int i = 1; i < width - 1; i++)
+            {
+                for (int j = 1; j < height - 1; j++)
+                {
+                    double product = 1.0;
+
+                    // Calculate the geometric mean of the neighboring pixels
+                    for (int x = -1; x <= 1; x++)
+                    {
+                        for (int y = -1; y <= 1; y++)
+                        {
+                            Color pixel = originalImage.GetPixel(i + x, j + y);
+                            double grayValue = (pixel.R + pixel.G + pixel.B) / 3.0 / 255.0; // Convert to grayscale
+
+                            product *= grayValue;
+                        }
+                    }
+
+                    // Take the nth root of the product, where n is the total number of pixels in the filter
+                    double geometricMean = Math.Pow(product, 1.0 / (filterSize * filterSize));
+
+                    // Set the restored pixel value
+                    int restoredPixelValue = (int)(geometricMean * 255.0);
+                    Color restoredColor = Color.FromArgb(restoredPixelValue, restoredPixelValue, restoredPixelValue);
+                    restoredImage.SetPixel(i, j, restoredColor);
+                }
+            }
+
+            return restoredImage;
+        }
+
+        static Bitmap ApplyContraharmonicMeanFilter(Bitmap originalImage, double q)
+        {
+            int width = originalImage.Width;
+            int height = originalImage.Height;
+
+            Bitmap filteredImage = new Bitmap(width, height);
+
+            // Define the filter window size (e.g., 3x3)
+            int filterSize = 3;
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    // Apply the filter to each pixel
+                    double numerator = 0;
+                    double denominator = 0;
+
+                    for (int i = -filterSize / 2; i <= filterSize / 2; i++)
+                    {
+                        for (int j = -filterSize / 2; j <= filterSize / 2; j++)
+                        {
+                            int neighborX = Math.Max(0, Math.Min(width - 1, x + i));
+                            int neighborY = Math.Max(0, Math.Min(height - 1, y + j));
+
+                            Color neighborPixel = originalImage.GetPixel(neighborX, neighborY);
+                            double pixelValue = neighborPixel.R; // Assuming grayscale image
+
+                            numerator += Math.Pow(pixelValue, q + 1);
+                            denominator += Math.Pow(pixelValue, q);
+                        }
+                    }
+
+                    // Update the pixel value in the filtered image
+                    int filteredPixelValue = (int)(numerator / denominator);
+                    filteredPixelValue = Math.Max(0, Math.Min(255, filteredPixelValue)); // Ensure the value is within the valid range
+
+                    Color filteredColor = Color.FromArgb(filteredPixelValue, filteredPixelValue, filteredPixelValue);
+                    filteredImage.SetPixel(x, y, filteredColor);
+                }
+            }
+
+            return filteredImage;
+        }
+
+        static Bitmap ApplyMedianFilter(Bitmap inputImage)
+        {
+            int width = inputImage.Width;
+            int height = inputImage.Height;
+            Bitmap outputImage = new Bitmap(width, height);
+
+            // Define a 3x3 median filter kernel
+            int[,] medianFilterKernel = {
+            {1, 1, 1},
+            {1, 1, 1},
+            {1, 1, 1}
+        };
+
+            // Apply the median filter
+            for (int x = 1; x < width - 1; x++)
+            {
+                for (int y = 1; y < height - 1; y++)
+                {
+                    int medianPixelValue = GetMedianPixelValue(inputImage, x, y, medianFilterKernel);
+                    outputImage.SetPixel(x, y, Color.FromArgb(medianPixelValue, medianPixelValue, medianPixelValue));
+                }
+            }
+
+            return outputImage;
+        }
+
+        static int GetMedianPixelValue(Bitmap image, int x, int y, int[,] kernel)
+        {
+            int[] pixelValues = new int[9]; // Array to store pixel values in the neighborhood
+
+            int index = 0;
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    Color pixel = image.GetPixel(x + i, y + j);
+                    int pixelValue = (int)(pixel.R * 0.3 + pixel.G * 0.59 + pixel.B * 0.11); // Convert to grayscale
+
+                    // Apply the kernel
+                    pixelValue *= kernel[i + 1, j + 1];
+
+                    // Store the pixel value in the array
+                    pixelValues[index] = pixelValue;
+                    index++;
+                }
+            }
+
+            // Sort the array and return the median value
+            Array.Sort(pixelValues);
+            return pixelValues[4]; // 4 is the index of the median value in a 3x3 neighborhood
+        }
+
+        static Bitmap ApplyMinFilter(Bitmap inputImage)
+        {
+            int width = inputImage.Width;
+            int height = inputImage.Height;
+            Bitmap outputImage = new Bitmap(width, height);
+
+            // Define a 3x3 min filter kernel
+            int[,] minFilterKernel = {
+            {1, 1, 1},
+            {1, 1, 1},
+            {1, 1, 1}
+        };
+
+            // Apply the min filter
+            for (int x = 1; x < width - 1; x++)
+            {
+                for (int y = 1; y < height - 1; y++)
+                {
+                    int minPixelValue = GetMinPixelValue(inputImage, x, y, minFilterKernel);
+                    outputImage.SetPixel(x, y, Color.FromArgb(minPixelValue, minPixelValue, minPixelValue));
+                }
+            }
+
+            return outputImage;
+        }
+
+        static int GetMinPixelValue(Bitmap image, int x, int y, int[,] kernel)
+        {
+            int minPixelValue = 255; // Initialize to maximum possible value (for grayscale images)
+
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    Color pixel = image.GetPixel(x + i, y + j);
+                    int pixelValue = (int)(pixel.R * 0.3 + pixel.G * 0.59 + pixel.B * 0.11); // Convert to grayscale
+
+                    // Apply the kernel
+                    pixelValue *= kernel[i + 1, j + 1];
+
+                    // Update the minimum pixel value
+                    minPixelValue = Math.Min(minPixelValue, pixelValue);
+                }
+            }
+
+            return minPixelValue;
+        }
+
+        static Bitmap ApplyMaxFilter(Bitmap inputImage)
+        {
+            int width = inputImage.Width;
+            int height = inputImage.Height;
+            Bitmap outputImage = new Bitmap(width, height);
+
+            // Define a 3x3 max filter kernel
+            int[,] maxFilterKernel = {
+            {1, 1, 1},
+            {1, 1, 1},
+            {1, 1, 1}
+        };
+
+            // Apply the max filter
+            for (int x = 1; x < width - 1; x++)
+            {
+                for (int y = 1; y < height - 1; y++)
+                {
+                    int maxPixelValue = GetMaxPixelValue(inputImage, x, y, maxFilterKernel);
+                    outputImage.SetPixel(x, y, Color.FromArgb(maxPixelValue, maxPixelValue, maxPixelValue));
+                }
+            }
+
+            return outputImage;
+        }
+
+        static int GetMaxPixelValue(Bitmap image, int x, int y, int[,] kernel)
+        {
+            int maxPixelValue = 0; // Initialize to minimum possible value (for grayscale images)
+
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    Color pixel = image.GetPixel(x + i, y + j);
+                    int pixelValue = (int)(pixel.R * 0.3 + pixel.G * 0.59 + pixel.B * 0.11); // Convert to grayscale
+
+                    // Apply the kernel
+                    pixelValue *= kernel[i + 1, j + 1];
+
+                    // Update the maximum pixel value
+                    maxPixelValue = Math.Max(maxPixelValue, pixelValue);
+                }
+            }
+
+            return maxPixelValue;
+        }
+
+        static Bitmap ApplyMidpointFilter(Bitmap inputImage)
+        {
+            int width = inputImage.Width;
+            int height = inputImage.Height;
+            Bitmap outputImage = new Bitmap(width, height);
+
+            // Define a 3x3 midpoint filter kernel
+            int[,] midpointFilterKernel = {
+            {1, 1, 1},
+            {1, 1, 1},
+            {1, 1, 1}
+        };
+
+            // Apply the midpoint filter
+            for (int x = 1; x < width - 1; x++)
+            {
+                for (int y = 1; y < height - 1; y++)
+                {
+                    int midpointPixelValue = GetMidpointPixelValue(inputImage, x, y, midpointFilterKernel);
+                    outputImage.SetPixel(x, y, Color.FromArgb(midpointPixelValue, midpointPixelValue, midpointPixelValue));
+                }
+            }
+
+            return outputImage;
+        }
+
+        static int GetMidpointPixelValue(Bitmap image, int x, int y, int[,] kernel)
+        {
+            int[] pixelValues = new int[9]; // Array to store pixel values in the neighborhood
+
+            int index = 0;
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    Color pixel = image.GetPixel(x + i, y + j);
+                    int pixelValue = (int)(pixel.R * 0.3 + pixel.G * 0.59 + pixel.B * 0.11); // Convert to grayscale
+
+                    // Apply the kernel
+                    pixelValue *= kernel[i + 1, j + 1];
+
+                    // Store the pixel value in the array
+                    pixelValues[index] = pixelValue;
+                    index++;
+                }
+            }
+
+            // Find the minimum and maximum pixel values
+            int minValue = pixelValues.Min();
+            int maxValue = pixelValues.Max();
+
+            // Calculate the midpoint value
+            int midpointValue = (minValue + maxValue) / 2;
+
+            return midpointValue;
+        }
+
+        private void geometricFilter_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                if (degradedImg == null)
+                {
+                    degradedImg = originalImage;
+                }
+                Bitmap geometric = ApplyGeometricMeanFilter(degradedImg);
+                imageChannel.Image = geometric;
+            }
+        }
+
+        private void contraHarmonicFilter_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                if (degradedImg == null)
+                {
+                    degradedImg = originalImage;
+                }
+                if (string.IsNullOrEmpty(qValue.Text))
+                {
+                    MessageBox.Show("Please input valid Q value.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    Bitmap contraharmonic = ApplyContraharmonicMeanFilter(degradedImg, double.Parse(qValue.Text));
+                    imageChannel.Image = contraharmonic;
+                }
+            }
+        }
+
+        private void minFilter_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                if (degradedImg == null)
+                {
+                    degradedImg = originalImage;
+                }
+                Bitmap min = ApplyMinFilter(degradedImg);
+                imageChannel.Image = min;
+            }
+        }
+
+        private void maxFilter_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                if (degradedImg == null)
+                {
+                    degradedImg = originalImage;
+                }
+                Bitmap max = ApplyMaxFilter(degradedImg);
+                imageChannel.Image = max;
+            }
+        }
+
+        private void medianFilter_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                if (degradedImg == null)
+                {
+                    degradedImg = originalImage;
+                }
+                Bitmap median = ApplyMedianFilter(degradedImg);
+                imageChannel.Image = median;
+            }
+        }
+
+        private void midpointFilter_Click(object sender, EventArgs e)
+        {
+            if (originalImage != null)
+            {
+                if (degradedImg == null)
+                {
+                    degradedImg = originalImage;
+                }
+                Bitmap midpoint = ApplyMidpointFilter(degradedImg);
+                imageChannel.Image = midpoint;
+            }
         }
     }
 }
