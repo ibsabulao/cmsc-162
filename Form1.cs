@@ -7,6 +7,9 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Diagnostics.Metrics;
 using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Reflection.Emit;
+using System.Drawing.Drawing2D;
+using System.Linq;
 
 namespace Image_Processing
 {
@@ -23,21 +26,218 @@ namespace Image_Processing
         private Bitmap? redChannelImage;
         private Bitmap? greenChannelImage;
         private Bitmap? blueChannelImage;
+        private Bitmap? foregroundImage;
+        private Bitmap? editedImage;
         private PictureBox? histogramPictureBox;
         private int maxFrequencyIntensity = -1;
         private int maxCount;
         private string? selectedFilePath;
+        private string? imageFileName;
+
+        private bool isNightMode = false;
 
         // Create a new form to display the histogram
         Form histogramForm = new Form();
 
         // Degraded image
         private Bitmap? degradedImg;
+        public void hidePanels()
+        {
+            editPanel.Visible = false;
+            // panel2.Visible = false;
+        }
+
+        public void hideCompressed()
+        {
+            imageChannel.Visible = false;
+            showOriginal.Visible = false;
+            showCompressed.Visible = false;
+            compressedLabel.Visible = false;
+            originalLabel.Visible = false;
+        }
+
+        public void hideCloseButton()
+        {
+            imageNameLabel.Text = string.Empty;
+            closeImage.Visible = false;
+        }
 
         public Form1()
         {
             InitializeComponent();
-            imageLabel.Text = "";
+            Load += new EventHandler(MainForm_Load);
+            // panel2.Location = editPanel.Location;
+
+            imageChannel.MouseMove += Control_MouseMove;
+        }
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            hidePanels();
+            hideCompressed();
+            hideCloseButton();
+
+            imageChannel.Visible = true;
+            editPanel.Visible = true;
+        }
+
+        private void panel1Button_Click(object sender, EventArgs e)
+        {
+            hidePanels();
+            editPanel.Visible = true;
+        }
+
+        private void panel2Button_Click(object sender, EventArgs e)
+        {
+            hidePanels();
+            // panel2.Visible = true;
+        }
+
+        private void exitButton_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void minWindows_Click(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
+        }
+
+        private void modeToggleButton_Click(object sender, EventArgs e)
+        {
+            // Toggle between night and light mode
+            isNightMode = !isNightMode;
+
+            // Update the UI based on the selected mode
+            UpdateUI();
+        }
+
+        private void UpdateUI()
+        {
+            if (isNightMode)
+            {
+                // Night mode settings
+                tableLayoutPanel1.BackColor = Color.FromArgb(30, 30, 30);
+                menuStrip1.BackColor = Color.FromArgb(52, 52, 52);
+                displayOriginalPanel.BackColor = Color.FromArgb(56, 56, 56);
+                headerinfoPanel.BackColor = Color.FromArgb(56, 56, 56);
+                ViewImage.BackColor = Color.FromArgb(56, 56, 56);
+                PCXheaderInfoBox.BackColor = Color.FromArgb(56, 56, 56);
+
+                pixelInfoPanel.BackColor = Color.FromArgb(56, 56, 56);
+                imageNamePanel.BackColor = Color.FromArgb(56, 56, 56);
+                closeImage.BackColor = Color.FromArgb(56, 56, 56);
+                tabPanel.BackColor = Color.FromArgb(42, 42, 42);
+                editPanel.BackColor = Color.FromArgb(30, 30, 30);
+                imageChannel.BackColor = Color.FromArgb(30, 30, 30);
+                backgroundButtons.BackColor = Color.FromArgb(56, 56, 56);
+                compressionButtons.BackColor = Color.FromArgb(56, 56, 56);
+                otherButtons.BackColor = Color.FromArgb(56, 56, 56);
+                buttonsPanel.BackColor = Color.FromArgb(30, 30, 30);
+                buttonsSection.BackColor = Color.FromArgb(30, 30, 30);
+
+                // Palette
+                paletteDisplay.BackColor = Color.FromArgb(56, 56, 56);
+                colorPalettePanel.BackColor = Color.FromArgb(56, 56, 56);
+
+                redPixel.ForeColor = Color.FromArgb(170, 170, 170);
+                greenPixel.ForeColor = Color.FromArgb(170, 170, 170);
+                bluePixel.ForeColor = Color.FromArgb(170, 170, 170);
+
+                // Light Mode
+                darkLightMode.BackColor = Color.White;
+
+                // Menu
+                menuStrip1.BackColor = Color.FromArgb(52, 52, 52);
+                menuStrip1.RenderMode = ToolStripRenderMode.Professional;
+                menuStrip1.Renderer = new MyRenderer(); // Custom renderer for hover and select colors
+
+                // Menu > File
+                openImageFileToolStripMenuItem.BackColor = Color.FromArgb(52, 52, 52);
+                openPCXFileToolStripMenuItem.BackColor = Color.FromArgb(52, 52, 52);
+                saveToolStripMenuItem.BackColor = Color.FromArgb(52, 52, 52);
+                saveAsToolStripMenuItem.BackColor = Color.FromArgb(52, 52, 52);
+
+                menuStrip1.ForeColor = Color.White;
+                openImageFileToolStripMenuItem.ForeColor = Color.White;
+                openPCXFileToolStripMenuItem.ForeColor = Color.White;
+                saveToolStripMenuItem.ForeColor = Color.White;
+                saveAsToolStripMenuItem.ForeColor = Color.White;
+
+                openImageFileToolStripMenuItem.Image = Properties.Resources.open_light;
+                openPCXFileToolStripMenuItem.Image = Properties.Resources.openpcx_light;
+                saveToolStripMenuItem.Image = Properties.Resources.save_light;
+                saveAsToolStripMenuItem.Image = Properties.Resources.saveas_light;
+
+                originalImageLabel.ForeColor = Color.FromArgb(212, 212, 212);
+                headerInfoLabel.ForeColor = Color.FromArgb(212, 212, 212);
+                PCXheaderInfoBox.ForeColor = Color.FromArgb(170, 170, 170);
+                colorPalette.ForeColor = Color.FromArgb(170, 170, 170);
+                pixelInfo.ForeColor = Color.FromArgb(170, 170, 170);
+                imageNameLabel.ForeColor = Color.White;
+                editPanel.ForeColor = Color.White;
+
+                darkLightMode.Image = Properties.Resources.lightmode;
+                // Add other controls or settings you want to modify for night mode
+            }
+            else
+            {
+                // Light mode settings
+                this.BackColor = SystemColors.Control; // Default background color
+
+                imageChannel.BackColor = SystemColors.Control;
+                menuStrip1.BackColor = SystemColors.Menu;
+                PCXheaderInfoBox.BackColor = SystemColors.ControlLight;
+                bw_trackbar.BackColor = SystemColors.Menu;
+                ViewImage.BackColor = SystemColors.ControlLight;
+                darkLightMode.BackColor = Color.Black;
+                menu1ToolStripMenuItem.BackColor = SystemColors.Control;
+                openImageFileToolStripMenuItem.BackColor = SystemColors.Control;
+                openPCXFileToolStripMenuItem.BackColor = SystemColors.Control;
+                menu2ToolStripMenuItem.BackColor = SystemColors.Control;
+                huffmanCodingToolStripMenuItem.BackColor = SystemColors.Control;
+                filterToolStripMenuItem.BackColor = SystemColors.Control;
+                spatialFiltering.BackColor = SystemColors.Control;
+
+                label1.ForeColor = SystemColors.ControlText;
+                label3.ForeColor = SystemColors.ControlText;
+                label4.ForeColor = SystemColors.ControlText;
+                label2.ForeColor = SystemColors.ControlText;
+                label5.ForeColor = SystemColors.ControlText;
+                label6.ForeColor = SystemColors.ControlText;
+                label7.ForeColor = SystemColors.ControlText;
+                label8.ForeColor = SystemColors.ControlText;
+                label9.ForeColor = SystemColors.ControlText;
+                PCXheaderInfoBox.ForeColor = SystemColors.MenuText;
+                originalImageLabel.ForeColor = SystemColors.ControlText;
+                menu1ToolStripMenuItem.ForeColor = SystemColors.ControlText;
+                openImageFileToolStripMenuItem.ForeColor = SystemColors.ControlText;
+                openPCXFileToolStripMenuItem.ForeColor = SystemColors.ControlText;
+                menu2ToolStripMenuItem.ForeColor = SystemColors.ControlText;
+                huffmanCodingToolStripMenuItem.ForeColor = SystemColors.ControlText;
+                filterToolStripMenuItem.ForeColor = SystemColors.ControlText;
+                spatialFiltering.ForeColor = SystemColors.ControlText;
+
+                darkLightMode.Image = Properties.Resources.darkmode_light;
+                // Reset other controls or settings modified for night mode
+            }
+        }
+
+        // Custom renderer class to set hover and select colors
+        public class MyRenderer : ToolStripProfessionalRenderer
+        {
+            public MyRenderer() : base(new MyColors()) { }
+
+            private class MyColors : ProfessionalColorTable
+            {
+                private Color GradientStartColor { get; } = Color.FromArgb(90, 90, 90);
+                private Color GradientEndColor { get; } = Color.FromArgb(50, 50, 50);
+                public override Color MenuItemBorder { get; } = Color.FromArgb(90, 90, 90);
+                public override Color MenuItemPressedGradientBegin { get; } = Color.FromArgb(90, 90, 90);
+                public override Color MenuItemPressedGradientEnd { get; } = Color.FromArgb(90, 90, 90);
+                public override Color MenuItemSelected => GradientStartColor;
+                public override Color MenuItemSelectedGradientBegin => GradientStartColor;
+                public override Color MenuItemSelectedGradientEnd => GradientEndColor;
+            }
         }
 
         // ViewImage_Click event handler is triggered when the "View Image" button is clicked.
@@ -58,23 +258,40 @@ namespace Image_Processing
 
                     try
                     {
-                        // Clear any existing information and loaded images.
-                        PCXheaderInfoBox.Controls.Clear();
                         PCXheaderInfoBox.Clear();
+
+                        if (paletteDisplay.Controls != null)
+                        {
+                            paletteDisplay.Controls.Clear();
+                        }
+
+                        // Extract the filename and extension from the selected file path.
+                        string fileName = Path.GetFileName(selectedFilePath);
+                        string fileExtension = Path.GetExtension(selectedFilePath);
+
+                        originalImageLabel.Text = "Original Image";
 
                         // Load the selected image and display it in the "ViewImage" PictureBox.
                         originalImage = new Bitmap(selectedFilePath);
                         ViewImage.Image = originalImage;
 
                         // Clear any previously displayed image channel and labels.
+                        if (editedImage != null)
+                        {
+                            editedImage = null;
+                        }
                         imageChannel.Image = null;
                         degradedImg = null; // Empty if there's previous image.
-                        originalImageLabel.Text = "Original Image";
 
-                        // Set tooltips for the PictureBox and imageChannel PictureBox to show intensity information.
-                        System.Windows.Forms.ToolTip toolTip = new System.Windows.Forms.ToolTip();
-                        toolTip.SetToolTip(ViewImage, "Intensity: "); // Initial tooltip text for "ViewImage".
-                        toolTip.SetToolTip(imageChannel, "Intensity: "); // Initial tooltip text for "imageChannel".
+                        hideCloseButton();
+                        closeImage.Visible = true;
+
+                        // Now you can use 'fileName' and 'fileExtension' as needed.
+                        if (isNightMode)
+                        {
+                            imageNamePanel.ForeColor = Color.White;
+                        }
+                        imageNameLabel.Text = $"{fileName}";
                     }
                     catch (Exception ex)
                     {
@@ -103,6 +320,10 @@ namespace Image_Processing
 
                     try
                     {
+                        // Extract the filename and extension from the selected file path.
+                        string fileName = Path.GetFileName(selectedFilePath);
+                        string fileExtension = Path.GetExtension(selectedFilePath);
+
                         // Read the PCX image file data into a byte array.
                         pcxData = File.ReadAllBytes(selectedFilePath);
 
@@ -111,9 +332,14 @@ namespace Image_Processing
                         using (BinaryReader pcxReader = new BinaryReader(pcxStream))
                         using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Open, FileAccess.Read))
                         {
-                            // Clear any existing information and loaded images.
                             PCXheaderInfoBox.Clear();
-                            originalImageLabel.Text = "Original PCX Image";
+
+                            if (paletteDisplay.Controls != null)
+                            {
+                                paletteDisplay.Controls.Clear();
+                            }
+
+                            originalImageLabel.Text = "Original Image";
 
                             // Read and display the PCX image header information.
                             byte[] header = new byte[128];
@@ -154,9 +380,19 @@ namespace Image_Processing
                             }
 
                             // Display the PCX image in the PictureBox control.
+                            if (editedImage != null)
+                            {
+                                editedImage = null;
+                            }
                             ViewImage.Image = originalImage;
                             imageChannel.Image = null; // Empty if there's a previously uploaded image.
                             degradedImg = null; // Empty if there's previous image.
+
+                            hideCloseButton();
+                            closeImage.Visible = true;
+
+                            // Now you can use 'fileName' and 'fileExtension' as needed.
+                            imageNameLabel.Text = $"{fileName}";
                         }
                     }
                     catch (Exception ex)
@@ -166,6 +402,155 @@ namespace Image_Processing
                     }
                 }
             }
+        }
+
+        // MouseMove event for controls
+        private void Control_MouseMove(object sender, MouseEventArgs e)
+        {
+            // Get the screen coordinates of the mouse relative to the control
+            Point relativeMousePos = ((Control)sender).PointToScreen(e.Location);
+
+            // Get the color of the pixel at the mouse position on the screen
+            Color pixelColor = GetPixelColorAt(relativeMousePos);
+
+            // Display the pixel information in the label or any other control you want
+            redPixel.Text = $"{pixelColor.R}";
+            greenPixel.Text = $"{pixelColor.G}";
+            bluePixel.Text = $"{pixelColor.B}";
+
+            // Update the displayColor PictureBox with the color of the hovered pixel
+            displayColor.BackColor = pixelColor;
+        }
+
+        private Color GetPixelColorAt(Point location)
+        {
+            // Get the color of the pixel at the specified location on the screen
+            using (Bitmap screen = new Bitmap(1, 1))
+            {
+                using (Graphics g = Graphics.FromImage(screen))
+                {
+                    g.CopyFromScreen(location, Point.Empty, new Size(1, 1));
+                }
+
+                return screen.GetPixel(0, 0);
+            }
+        }
+
+        private void FlipHorizontalButton_Click(object sender, EventArgs e)
+        {
+            // Check if an image is loaded
+            if (originalImage == null)
+            {
+                return;
+            }
+
+            if (editedImage != null)
+            {
+                // Flip the image horizontally
+                editedImage = FlipImage(editedImage, true, false);
+            }
+            else if (editedImage == null && originalImage != null)
+            {
+                // Flip the image horizontally
+                editedImage = FlipImage(originalImage, true, false);
+            }
+
+            imageChannel.Image = editedImage;
+        }
+
+        private void FlipVerticalButton_Click(object sender, EventArgs e)
+        {
+
+            // Check if an image is loaded
+            if (originalImage == null)
+            {
+                return;
+            }
+
+            if (editedImage != null)
+            {
+                // Flip the image vertically
+                editedImage = FlipImage(editedImage, false, true);
+            }
+            else if (editedImage == null && originalImage != null)
+            {
+                // Flip the image vertically
+                editedImage = FlipImage(originalImage, false, true);
+            }
+
+            imageChannel.Image = editedImage;
+        }
+
+        private Bitmap FlipImage(Bitmap image, bool flipHorizontal, bool flipVertical)
+        {
+            editedImage = new Bitmap(image.Width, image.Height);
+
+            using (Graphics g = Graphics.FromImage(editedImage))
+            {
+                if (flipHorizontal)
+                {
+                    g.DrawImage(image, new Rectangle(image.Width, 0, -image.Width, image.Height),
+                                new Rectangle(0, 0, image.Width, image.Height), GraphicsUnit.Pixel);
+                }
+                else if (flipVertical)
+                {
+                    g.DrawImage(image, new Rectangle(0, image.Height, image.Width, -image.Height),
+                                new Rectangle(0, 0, image.Width, image.Height), GraphicsUnit.Pixel);
+                }
+            }
+
+            return editedImage;
+        }
+
+        private void RotateClockwiseButton_Click(object sender, EventArgs e)
+        {
+            // Check if an image is loaded
+            if (originalImage == null)
+            {
+                return;
+            }
+
+            if (editedImage != null)
+            {
+                // Rotate the image 90 degrees clockwise
+                editedImage = RotateImage(editedImage, RotateFlipType.Rotate90FlipNone);
+            }
+            else if (editedImage == null && originalImage != null)
+            {
+                // Rotate the image 90 degrees clockwise
+                editedImage = RotateImage(originalImage, RotateFlipType.Rotate90FlipNone);
+            }
+
+            imageChannel.Image = editedImage;
+        }
+
+        private void RotateCounterClockwiseButton_Click(object sender, EventArgs e)
+        {
+            // Check if an image is loaded
+            if (originalImage == null)
+            {
+                return;
+            }
+
+            if (editedImage != null)
+            {
+                // Rotate the image 90 degrees counter-clockwise
+                editedImage = RotateImage(editedImage, RotateFlipType.Rotate270FlipNone);
+            }
+            else if (editedImage == null && originalImage != null)
+            {
+                // Rotate the image 90 degrees counter-clockwise
+                editedImage = RotateImage(originalImage, RotateFlipType.Rotate270FlipNone);
+            }
+
+            imageChannel.Image = editedImage;
+        }
+
+        private Bitmap RotateImage(Bitmap image, RotateFlipType rotateFlipType)
+        {
+            editedImage = (Bitmap)image.Clone();
+            editedImage.RotateFlip(rotateFlipType);
+            return editedImage;
         }
 
         // PCX_DisplayHeaderInfo method displays header information of a PCX image.
@@ -184,7 +569,6 @@ namespace Image_Processing
 
             // Extract and display header information in the PCXheaderInfoBox.
             bitsPerPixel = header[3];
-            PCXheaderInfoBox.AppendText("PCX Header Information: " + Environment.NewLine + Environment.NewLine);
             PCXheaderInfoBox.AppendText($"Manufacturer: {manufacturer}" + Environment.NewLine);
             PCXheaderInfoBox.AppendText($"Version: {header[1]}" + Environment.NewLine);
             PCXheaderInfoBox.AppendText($"Encoding: {header[2]}" + Environment.NewLine);
@@ -223,22 +607,17 @@ namespace Image_Processing
             int hscreenSize = BitConverter.ToUInt16(header, 70);
             int vscreenSize = BitConverter.ToUInt16(header, 72);
             PCXheaderInfoBox.AppendText($"Horizontal Screen Size: {hscreenSize}" + Environment.NewLine);
-            PCXheaderInfoBox.AppendText($"Vertical Screen Size: {vscreenSize}" + Environment.NewLine);
+            PCXheaderInfoBox.AppendText($"Vertical Screen Size: {vscreenSize}");
         }
 
 
         private void PCX_DisplayPalette(byte[] paletteData)
         {
-            PCXheaderInfoBox.Controls.Clear();
-
-            PCXheaderInfoBox.AppendText("\nColor Palette:" + Environment.NewLine);
-
             int paletteSize = paletteData.Length / 3;
             int paletteWidth = 10;
             int paletteHeight = 10;
 
-            // Calculate the starting Y coordinate for appending below the text
-            int startY = PCXheaderInfoBox.GetPositionFromCharIndex(PCXheaderInfoBox.Text.Length - 1).Y + PCXheaderInfoBox.Font.Height;
+            int rows = (int)Math.Ceiling((double)paletteSize / 16); // Assuming 16 colors per row
 
             for (int i = 0; i < paletteSize; i++)
             {
@@ -250,10 +629,20 @@ namespace Image_Processing
                 Panel colorSquare = new Panel();
                 colorSquare.BackColor = Color.FromArgb(r, g, b);
                 colorSquare.Size = new Size(paletteWidth, paletteHeight);
-                colorSquare.Location = new Point(i % 16 * paletteWidth, startY + (i / 16 * paletteHeight));
+
+                // Calculate the center position within paletteDisplay
+                int centerX = (paletteDisplay.Width - (16 * paletteWidth)) / 2;
+                int centerY = (paletteDisplay.Height - (rows * paletteHeight)) / 2;
+
+                // Calculate the position of the color square within the grid
+                int gridX = i % 16;
+                int gridY = i / 16;
+
+                // Set the location of the color square
+                colorSquare.Location = new Point(centerX + gridX * paletteWidth, centerY + gridY * paletteHeight);
 
                 // Add the color square to the palettePanel
-                PCXheaderInfoBox.Controls.Add(colorSquare);
+                paletteDisplay.Controls.Add(colorSquare);
             }
         }
 
@@ -290,9 +679,23 @@ namespace Image_Processing
         // Handle the "Red" button click event to display the Red channel of the original image.
         private void Red_Click(object sender, EventArgs e)
         {
-            if (originalImage != null)
+            // Check if an image is loaded
+            if (originalImage == null)
             {
-                imageLabel.Text = "Red Channel";
+                return;
+            }
+
+            if (editedImage != null)
+            {
+                redChannelImage = SplitChannel(editedImage, ColorChannel.Red); // Extract the Red channel from the original image and store it in redChannelImage.
+                histogramForm.Text = "Red Channel Histogram"; // Update the title of the histogramForm
+                imageChannel.Image = redChannelImage; // Display the Red channel image in the imageChannel PictureBox.
+
+                // Call the modified ShowHistogram method and get the histogram colors
+                Color[] histogramColors = ShowHistogram(redChannelImage); // Call a modified ShowHistogram method to display the histogram for the Red channel.
+            }
+            else if (editedImage == null && originalImage != null)
+            {
                 redChannelImage = SplitChannel(originalImage, ColorChannel.Red); // Extract the Red channel from the original image and store it in redChannelImage.
                 histogramForm.Text = "Red Channel Histogram"; // Update the title of the histogramForm
                 imageChannel.Image = redChannelImage; // Display the Red channel image in the imageChannel PictureBox.
@@ -305,9 +708,23 @@ namespace Image_Processing
         // Handle the "Green" button click event to display the Green channel of the original image.
         private void Green_Click(object sender, EventArgs e)
         {
-            if (originalImage != null)
+            // Check if an image is loaded
+            if (originalImage == null)
             {
-                imageLabel.Text = "Green Channel";
+                return;
+            }
+
+            if (editedImage != null)
+            {
+                greenChannelImage = SplitChannel(editedImage, ColorChannel.Green); // Extract the Green channel from the original image and store it in greenChannelImage.
+                histogramForm.Text = "Green Channel Histogram"; // Update the title of the histogramForm.
+                imageChannel.Image = greenChannelImage; // Display the Green channel image in the imageChannel PictureBox.
+
+                // Call the modified ShowHistogram method and get the histogram colors
+                Color[] histogramColors = ShowHistogram(greenChannelImage);
+            }
+            else if (editedImage == null && originalImage != null)
+            {
                 greenChannelImage = SplitChannel(originalImage, ColorChannel.Green); // Extract the Green channel from the original image and store it in greenChannelImage.
                 histogramForm.Text = "Green Channel Histogram"; // Update the title of the histogramForm.
                 imageChannel.Image = greenChannelImage; // Display the Green channel image in the imageChannel PictureBox.
@@ -320,9 +737,22 @@ namespace Image_Processing
         // Handle the "Blue" button click event to display the Blue channel of the original image.
         private void Blue_Click(object sender, EventArgs e)
         {
-            if (originalImage != null)
+            // Check if an image is loaded
+            if (originalImage == null)
             {
-                imageLabel.Text = "Blue Channel";
+                return;
+            }
+
+            if (editedImage != null)
+            {
+                blueChannelImage = SplitChannel(editedImage, ColorChannel.Blue); // Extract the Blue channel from the original image and store it in blueChannelImage.
+                imageChannel.Image = blueChannelImage; // Display the Blue channel image in the imageChannel PictureBox.
+
+                // Call the modified ShowHistogram method and get the histogram colors
+                Color[] histogramColors = ShowHistogram(blueChannelImage);
+            }
+            else if (editedImage == null && originalImage != null)
+            {
                 blueChannelImage = SplitChannel(originalImage, ColorChannel.Blue); // Extract the Blue channel from the original image and store it in blueChannelImage.
                 imageChannel.Image = blueChannelImage; // Display the Blue channel image in the imageChannel PictureBox.
 
@@ -361,7 +791,13 @@ namespace Image_Processing
 
         private Color[] ShowHistogram(Bitmap channelImage)
         {
-            Size pictureBoxSize = new Size(600, 600); // Set the desired PictureBox size
+
+            // Clear the existing image if it's not null
+            if (displayHistogram.Image != null)
+            {
+                displayHistogram.Image.Dispose();
+                displayHistogram.Image = null;
+            }
 
             // Ensure the channelImage is not null
             if (channelImage == null)
@@ -471,44 +907,12 @@ namespace Image_Processing
                     g.DrawString(i.ToString(), new Font("Arial", 8), Brushes.Black, 5, y);
                 }
 
-                histogramForm.Text = channelImage == redChannelImage ? "Red Channel Histogram" :
-                                    channelImage == greenChannelImage ? "Green Channel Histogram" :
-                                    channelImage == blueChannelImage ? "Blue Channel Histogram" :
-                                    "Histogram";
+                // Set the Image property of displayHistogram
+                displayHistogram.Image = histogramBitmap;
 
-                histogramForm.Size = pictureBoxSize;
-
-                // Create the PictureBox for the histogram if it's not already created
-                if (histogramPictureBox == null)
-                {
-                    histogramPictureBox = new PictureBox();
-                    histogramPictureBox.SizeMode = PictureBoxSizeMode.CenterImage;
-                    histogramPictureBox.Dock = DockStyle.Fill;
-
-                    // Calculate the location to center the PictureBox
-                    int pictureBoxX = (histogramForm.Width - histogramPictureBox.Width) / 2;
-                    int pictureBoxY = (histogramForm.Height - histogramPictureBox.Height) / 2;
-                    histogramPictureBox.Location = new Point(pictureBoxX, pictureBoxY);
-
-                    // Add the PictureBox to the form
-                    histogramForm.Controls.Add(histogramPictureBox);
-                }
-
-                // Clear the existing image
-                if (histogramPictureBox.Image != null)
-                {
-                    histogramPictureBox.Image.Dispose();
-                    histogramPictureBox.Image = null;
-                }
-
-                // Set the Image property if histogramPictureBox is not null
-                if (histogramPictureBox != null)
-                {
-                    histogramPictureBox.Image = histogramBitmap;
-                }
-
-                // Show the form as a dialog
-                histogramForm.ShowDialog();
+                // Adjust the PictureBox properties
+                displayHistogram.SizeMode = PictureBoxSizeMode.StretchImage; // You can adjust this based on your preference
+                displayHistogram.Dock = DockStyle.Fill; // DockStyle.Fill ensures that the image fills the entire PictureBox
             }
 
             return histogramColors;
@@ -522,96 +926,146 @@ namespace Image_Processing
             Blue // Represents the blue color channel.
         }
 
-        // function for greyscale transformation
+        // ------------------ Grayscale ------------------------
         private void Grayscale_Click(object sender, EventArgs e)
         {
-            if (originalImage != null) // if an image is loaded
+            // Check if an image is loaded
+            if (originalImage == null)
             {
-                imageLabel.Text = "Grayscale";
+                return;
+            }
+
+            if (editedImage != null)
+            {
                 // store original in a separate variable
+                Bitmap sourceImage = editedImage;
+
+                Grayscale(sourceImage);
+            }
+            else if (editedImage == null && originalImage != null)
+            {
                 Bitmap sourceImage = originalImage;
 
-                // new bitmap for the grayscale image
-                Bitmap grayscaleImage = new Bitmap(sourceImage.Width, sourceImage.Height);
-
-                // iterate through each pixel
-                for (int x = 0; x < sourceImage.Width; x++)
-                {
-                    for (int y = 0; y < sourceImage.Height; y++)
-                    {
-                        Color pixel = sourceImage.GetPixel(x, y); // get color of pixel
-                        int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B); // calculate grayscale value
-                        grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue)); // set pixel w the grayscale value
-                    }
-                }
-
-                // display the transformed image
-                imageChannel.Image = grayscaleImage;
-
+                Grayscale(sourceImage);
             }
         }
 
-        // function for negative transformation 
+        private void Grayscale(Bitmap image)
+        {
+            // new bitmap for the grayscale image
+            Bitmap grayscaleImage = new Bitmap(image.Width, image.Height);
+
+            // iterate through each pixel
+            for (int x = 0; x < image.Width; x++)
+            {
+                for (int y = 0; y < image.Height; y++)
+                {
+                    Color pixel = image.GetPixel(x, y); // get color of pixel
+                    int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B); // calculate grayscale value
+                    grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue)); // set pixel w the grayscale value
+                }
+            }
+
+            // display the transformed image
+            imageChannel.Image = grayscaleImage;
+            editedImage = grayscaleImage;
+        }
+
+        // ------------------ Negative ------------------------
         private void Negative_Click(object sender, EventArgs e)
         {
-            if (originalImage != null) // if an image is loaded
+            // Check if an image is loaded
+            if (originalImage == null)
             {
-                imageLabel.Text = "Negative";
+                return;
+            }
+
+            if (editedImage != null)
+            {
+                // store original in a separate variable
+                Bitmap sourceImage = editedImage;
+
+                Negative(sourceImage);
+            }
+            else if (editedImage == null && originalImage != null)
+            {
                 // store original in a separate variable
                 Bitmap sourceImage = originalImage;
 
-                // new bitmap for the negative image
-                Bitmap negativeImage = new Bitmap(sourceImage.Width, sourceImage.Height);
-
-                // iterate through each pixel
-                for (int x = 0; x < sourceImage.Width; x++)
-                {
-                    for (int y = 0; y < sourceImage.Height; y++)
-                    {
-                        Color pixel = sourceImage.GetPixel(x, y); // get color
-                        Color negativePixel = Color.FromArgb(255 - pixel.R, 255 - pixel.G, 255 - pixel.B); // calculate negative value
-                        negativeImage.SetPixel(x, y, negativePixel); // set pixel w the negative value
-                    }
-                }
-
-                // display the transformed image
-                imageChannel.Image = negativeImage;
-
+                Negative(sourceImage);
             }
         }
 
-        // function for black and white transformation
+        private void Negative(Bitmap image)
+        {
+            // new bitmap for the negative image
+            Bitmap negativeImage = new Bitmap(image.Width, image.Height);
+
+            // iterate through each pixel
+            for (int x = 0; x < image.Width; x++)
+            {
+                for (int y = 0; y < image.Height; y++)
+                {
+                    Color pixel = image.GetPixel(x, y); // get color
+                    Color negativePixel = Color.FromArgb(255 - pixel.R, 255 - pixel.G, 255 - pixel.B); // calculate negative value
+                    negativeImage.SetPixel(x, y, negativePixel); // set pixel w the negative value
+                }
+            }
+
+            // display the transformed image
+            imageChannel.Image = negativeImage;
+            editedImage = negativeImage;
+        }
+
+        // ------------------ BLACK AND WHITE ------------------------
         private void BW_Scroll(object sender, EventArgs e)
         {
-            if (originalImage != null) // if an image is loaded
+            if (originalImage == null)
             {
-                imageLabel.Text = "Black and White";
-                int threshold = bw_trackbar.Value;
+                return;
+            }
 
+            int threshold = bw_trackbar.Value;
+
+            if (editedImage != null)
+            {
                 // store original in a separate variable
                 Bitmap sourceImage = originalImage;
 
-                // new bitmap for the bw image
-                Bitmap bw_image = new Bitmap(sourceImage.Width, sourceImage.Height);
-
-                // iterate through each pixel
-                for (int y = 0; y < sourceImage.Height; y++)
-                {
-                    for (int x = 0; x < sourceImage.Width; x++)
-                    {
-                        Color pixel = sourceImage.GetPixel(x, y); // get color
-
-                        // calculate bw value
-                        int average = (pixel.R + pixel.G + pixel.B) / 3;
-                        Color bwColor = (average >= threshold) ? Color.White : Color.Black;
-
-                        bw_image.SetPixel(x, y, bwColor); // set pixel w bw value
-                    }
-                }
-
-                // display the transformed image
-                imageChannel.Image = bw_image;
+                BlackWhite(sourceImage, threshold);
             }
+            else if (editedImage == null && originalImage != null)
+            {
+                // store original in a separate variable
+                Bitmap sourceImage = originalImage;
+
+                BlackWhite(sourceImage, threshold);
+            }
+        }
+
+        private void BlackWhite(Bitmap image, int threshold)
+        {
+            // new bitmap for the bw image
+            Bitmap bw_image = new Bitmap(image.Width, image.Height);
+
+            // iterate through each pixel
+            for (int y = 0; y < image.Height; y++)
+            {
+                for (int x = 0; x < image.Width; x++)
+                {
+                    Color pixel = image.GetPixel(x, y); // get color
+
+                    // calculate bw value
+                    int average = (pixel.R + pixel.G + pixel.B) / 3;
+                    Color bwColor = (average >= threshold) ? Color.White : Color.Black;
+
+                    bw_image.SetPixel(x, y, bwColor); // set pixel w bw value
+                }
+            }
+
+            // display the transformed image
+            imageChannel.Image = bw_image;
+            editedImage = bw_image;
         }
 
         // function for gamma transformation
@@ -620,7 +1074,6 @@ namespace Image_Processing
             // if an image is loaded and gamma textbox is not empty
             if (originalImage != null && !string.IsNullOrEmpty(gamma_textbox.Text))
             {
-                imageLabel.Text = "Gamma Transform";
                 // store original in a separate variable
                 Bitmap sourceImage = originalImage;
 
@@ -707,13 +1160,6 @@ namespace Image_Processing
             }
         }
 
-        // Event handler for the originalImage_Click event.
-        private void originalImage_Click(object sender, EventArgs e)
-        {
-            // Display the original grayscale image in the originalGrayscale PictureBox.
-            imageChannel.Image = originalImage;
-        }
-
         // Button for Salt and Pepper Noise
         private void saltPepper_Click(object sender, EventArgs e)
         {
@@ -740,9 +1186,6 @@ namespace Image_Processing
                                 grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue)); // Set the corresponding pixel in the grayscale image to the calculated gray value
                             }
                         }
-
-                        // Set the label to indicate the applied noise
-                        imageLabel.Text = "Salt-and-Pepper Noise";
 
                         int w = grayscaleImage.Width;
                         int h = grayscaleImage.Height;
@@ -836,9 +1279,6 @@ namespace Image_Processing
                     }
                 }
 
-                // Set the label to indicate the applied noise
-                imageLabel.Text = "Salt-and-Pepper Noise";
-
                 int w = grayscaleImage.Width;
                 int h = grayscaleImage.Height;
 
@@ -922,9 +1362,6 @@ namespace Image_Processing
                         grayscaleImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue)); // Set the corresponding pixel in the grayscale image to the calculated gray value
                     }
                 }
-
-                // Set the label to indicate the applied noise
-                imageLabel.Text = "Rayleigh Noise";
 
                 int w = grayscaleImage.Width;
                 int h = grayscaleImage.Height;
@@ -1366,10 +1803,18 @@ namespace Image_Processing
 
         private void RLECompression_click(object sender, EventArgs e)
         {
+            hideCompressed();
+            showOriginal.Visible = true;
+            showCompressed.Visible = true;
+
+            originalLabel.Visible = true;
+            compressedLabel.Visible = true;
+
             if (originalImage != null && selectedFilePath != null && pcxData != null)
             {
-                // Display the original grayscale image in the originalGrayscale PictureBox.
-                imageChannel.Image = originalImage;
+                // Display the original image
+                showOriginal.Image = originalImage;
+                showCompressed.Image = originalImage;
 
                 string imagePath = selectedFilePath;
 
@@ -1388,7 +1833,8 @@ namespace Image_Processing
             else if (originalImage != null && selectedFilePath != null)
             {
                 // Display the original grayscale image in the originalGrayscale PictureBox.
-                imageChannel.Image = originalImage;
+                showOriginal.Image = originalImage;
+                showCompressed.Image = originalImage;
 
                 string imagePath = selectedFilePath;
 
@@ -1678,5 +2124,451 @@ namespace Image_Processing
                 return Frequency - other.Frequency;
             }
         }
+
+        // Final Project
+        private Color selectedBackgroundColor = Color.White; // Default background color
+        private void BatchProcessImages_Click(object sender, EventArgs e)
+        {
+            if (originalImage == null)
+            {
+                // No image is loaded. Display a message to the user.
+                MessageBox.Show("Please load an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (foregroundImage != null)
+            {
+                foregroundImage.Dispose();
+            }
+
+            // Show a dialog for the user to choose the output folder and filename.
+            string outputFilePath = GetOutputFilePath();
+
+            if (outputFilePath == null)
+            {
+                // User canceled the operation.
+                return;
+            }
+
+            // Show color picker to choose the background color
+            if (ChooseBackgroundColor())
+            {
+                // User selected a background color
+                // Remove the background
+                foregroundImage = RemoveBackground(originalImage, selectedBackgroundColor);
+
+                // Display the foregroundImage in the imageChannel picturebox
+                imageChannel.Image = foregroundImage;
+
+                // Save the processed image with the removed background.
+                foregroundImage.Save(outputFilePath, ImageFormat.Png);
+
+                MessageBox.Show("Image with removed background saved.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                selectedBackgroundColor = Color.Empty;
+            }
+        }
+
+        private bool ChooseBackgroundColor()
+        {
+            using (ColorDialog colorDialog = new ColorDialog())
+            {
+                colorDialog.AllowFullOpen = true;
+                colorDialog.ShowHelp = true;
+
+                if (colorDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // User selected a background color.
+                    selectedBackgroundColor = colorDialog.Color;
+
+                    // Reset the custom colors to forget the selected color.
+                    colorDialog.CustomColors = new int[16];
+
+                    return true;
+                }
+
+                // User canceled the operation.
+                return false;
+            }
+        }
+
+        private void btnChooseBackgroundColor_Click(object sender, EventArgs e)
+        {
+            if (originalImage == null)
+            {
+                // No image is loaded. Display a message to the user.
+                MessageBox.Show("Please load an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            else if (foregroundImage == null)
+            {
+                // No image is loaded. Display a message to the user.
+                MessageBox.Show("Please remove the background of an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Show a dialog for the user to choose the background color.
+            Color backgroundColor = GetBackgroundColor();
+
+            if (backgroundColor == Color.Empty)
+            {
+                // User canceled the operation or didn't choose a color.
+                return;
+            }
+
+            // Specify the desired background fill option.
+            BackgroundFillOption backgroundFillOption = BackgroundFillOption.Color;
+
+            // Call the image processing method with the chosen background color.
+            ProcessImageWithBackground(foregroundImage, backgroundColor, backgroundFillOption);
+        }
+
+        private void btnChooseBackgroundImage_Click(object sender, EventArgs e)
+        {
+            if (originalImage == null)
+            {
+                // No image is loaded. Display a message to the user.
+                MessageBox.Show("Please load an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            else if (foregroundImage == null)
+            {
+                // No image is loaded. Display a message to the user.
+                MessageBox.Show("Please remove the background of an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Show a dialog for the user to choose the background image file.
+            string backgroundImageFilePath = GetBackgroundImageFilePath();
+
+            if (backgroundImageFilePath == null)
+            {
+                // User canceled the operation.
+                return;
+            }
+
+            // Specify the desired background fill option.
+            BackgroundFillOption backgroundFillOption = BackgroundFillOption.Image;
+
+            // Call the image processing method with the chosen background image.
+            ProcessImageWithBackground(foregroundImage, Color.White, backgroundFillOption, backgroundImageFilePath);
+        }
+
+        private string GetOutputFilePath()
+        {
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Title = "Choose Output File and Location";
+                saveFileDialog.Filter = "PNG Files|*.png|All Files|*.*";
+                saveFileDialog.FilterIndex = 1;
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    return saveFileDialog.FileName;
+                }
+
+                // User canceled the operation.
+                return null;
+            }
+        }
+
+        private string GetBackgroundImageFilePath()
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Title = "Choose Background Image File";
+                openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.ico;*.tiff;*.jfif|All Files|*.*";
+                openFileDialog.FilterIndex = 1;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    return openFileDialog.FileName;
+                }
+
+                // User canceled the operation.
+                return null;
+            }
+        }
+
+        private Color GetBackgroundColor()
+        {
+            using (ColorDialog colorDialog2 = new ColorDialog())
+            {
+                colorDialog2.AllowFullOpen = true;
+                colorDialog2.ShowHelp = true;
+
+                if (colorDialog2.ShowDialog() == DialogResult.OK)
+                {
+                    return colorDialog2.Color;
+                }
+
+                // User canceled the operation.
+                return Color.White; // You can choose a default color here.
+            }
+        }
+
+        private void ProcessImageWithBackground(Bitmap foregroundImage, Color backgroundColor, BackgroundFillOption backgroundFillOption, string backgroundImageFilePath = null)
+        {
+            try
+            {
+                // Apply the new background fill option.
+                Bitmap resultImage;
+                switch (backgroundFillOption)
+                {
+                    case BackgroundFillOption.Color:
+                        resultImage = FillBackgroundWithColor(foregroundImage, backgroundColor);
+                        break;
+
+                    case BackgroundFillOption.Image:
+                        if (!string.IsNullOrEmpty(backgroundImageFilePath) && File.Exists(backgroundImageFilePath))
+                        {
+                            Bitmap backgroundImage = new Bitmap(backgroundImageFilePath);
+                            resultImage = FillBackgroundWithImage(foregroundImage, backgroundImage);
+                            backgroundImage.Dispose();
+                        }
+                        else
+                        {
+                            // Handle the case where the background image file is not found.
+                            resultImage = foregroundImage; // Use original foreground image.
+                        }
+                        break;
+
+                    default:
+                        // Handle unknown options.
+                        resultImage = foregroundImage; // Use original foreground image.
+                        break;
+                }
+
+                // Display the resultImage in the imageChannel PictureBox.
+                imageChannel.Image = resultImage;
+
+                // Save the result image to a new file or overwrite the original file.
+                string outputFilePath = GetOutputFilePath();
+
+                if (outputFilePath != null)
+                {
+                    resultImage.Save(outputFilePath, ImageFormat.Png);
+                    MessageBox.Show("Image processing complete. Result saved.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                resultImage.Dispose();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error during image processing: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private Bitmap RemoveBackground(Bitmap originalImage, Color backgroundColor)
+        {
+            // Create a new bitmap with the same size as the original image.
+            Bitmap resultImage = new Bitmap(originalImage.Width, originalImage.Height);
+
+            // Define a threshold for color similarity (adjust as needed).
+            int colorThreshold = 100;
+
+            for (int x = 0; x < originalImage.Width; x++)
+            {
+                for (int y = 0; y < originalImage.Height; y++)
+                {
+                    // Get the color of the current pixel in the original image.
+                    Color pixelColor = originalImage.GetPixel(x, y);
+
+                    // Check if the pixel color is similar to the background color.
+                    if (ColorSimilarity(pixelColor, backgroundColor) < colorThreshold)
+                    {
+                        // If similar, set the pixel in the result image to a transparent color.
+                        resultImage.SetPixel(x, y, Color.Transparent);
+                    }
+                    else
+                    {
+                        // If not similar, copy the pixel from the original image to the result image.
+                        resultImage.SetPixel(x, y, pixelColor);
+                    }
+                }
+            }
+
+            return resultImage;
+        }
+
+        private int ColorSimilarity(Color color1, Color color2)
+        {
+            // Calculate the Euclidean distance between two colors.
+            int redDiff = color1.R - color2.R;
+            int greenDiff = color1.G - color2.G;
+            int blueDiff = color1.B - color2.B;
+
+            return (int)Math.Sqrt(redDiff * redDiff + greenDiff * greenDiff + blueDiff * blueDiff);
+        }
+
+        private Bitmap FillBackgroundWithColor(Bitmap foregroundImage, Color backgroundColor)
+        {
+            // Create a new bitmap with the same size as the foreground image.
+            Bitmap resultImage = new Bitmap(foregroundImage.Width, foregroundImage.Height);
+
+            using (Graphics g = Graphics.FromImage(resultImage))
+            {
+                // Fill the background with the specified color.
+                g.Clear(backgroundColor);
+
+                // Draw the foreground image on top.
+                g.DrawImage(foregroundImage, Point.Empty);
+            }
+
+            return resultImage;
+        }
+
+        private Bitmap FillBackgroundWithImage(Bitmap foregroundImage, Bitmap backgroundImage)
+        {
+            // Resize the background image to match the size of the foreground image.
+            Bitmap resizedBackgroundImage = new Bitmap(foregroundImage.Width, foregroundImage.Height);
+            using (Graphics g = Graphics.FromImage(resizedBackgroundImage))
+            {
+                g.DrawImage(backgroundImage, 0, 0, foregroundImage.Width, foregroundImage.Height);
+            }
+
+            // Create a new bitmap with the same size as the foreground image.
+            Bitmap resultImage = new Bitmap(foregroundImage.Width, foregroundImage.Height);
+
+            using (Graphics g = Graphics.FromImage(resultImage))
+            {
+                // Draw the resized background image.
+                g.DrawImage(resizedBackgroundImage, Point.Empty);
+
+                // Draw the foreground image on top.
+                g.DrawImage(foregroundImage, Point.Empty);
+            }
+
+            return resultImage;
+        }
+
+        private void removeBG_MouseHover(object sender, EventArgs e)
+        {
+            toolTip1.SetToolTip(removeBG, "Remove Background");
+        }
+
+        private void colorBG_MouseHover(object sender, EventArgs e)
+        {
+            toolTip1.SetToolTip(colorBG, "Add Background Color");
+        }
+
+        private void imageBG_MouseHover(object sender, EventArgs e)
+        {
+            toolTip1.SetToolTip(imageBG, "Add Background Image");
+        }
+
+        private void rleFeature_MouseHover(object sender, EventArgs e)
+        {
+            toolTip1.SetToolTip(rleFeature, "Run-Length Coding");
+        }
+
+        private void rawImage_Click(object sender, EventArgs e)
+        {
+            if (originalImage == null)
+            {
+                return;
+            }
+            else if (editedImage != null)
+            {
+                editedImage = null;
+            }
+
+            imageChannel.Image = originalImage;
+        }
+
+        // -------------------------- CLOSING IMAGE ----------------------------
+        private void closeImage_Click(object sender, EventArgs e)
+        {
+            // Display a message box asking the user if they want to close or save the image
+            DialogResult result = MessageBox.Show("Do you want to close the image without saving changes?", "Close Image", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes) // Close without saving
+            {
+
+                if (originalImage == null)
+                {
+                    return;
+                }
+
+                // Clear any existing information and loaded images.
+                if (paletteDisplay != null)
+                {
+                    paletteDisplay.Controls.Clear();
+                }
+
+                PCXheaderInfoBox.Controls.Clear();
+                PCXheaderInfoBox.Clear();
+
+                // Dispose the Bitmap objects
+                originalImage = null;
+                editedImage = null;
+                imageChannel.Image = null;
+                ViewImage.Image = null;
+
+                imageNameLabel.Text = null;
+
+                hideCloseButton();
+            }
+            else if (result == DialogResult.No) // Save and close
+            {
+                if (originalImage == null)
+                {
+                    return;
+                }
+
+                if (editedImage == null)
+                {
+                    return;
+                }
+
+                // Save the edited image
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "JPEG Image|*.jpg|PNG Image|*.png|BMP Image|*.bmp|All Files|*.*";
+                saveFileDialog.Title = "Save Edited Image";
+                saveFileDialog.ShowDialog();
+
+                if (!string.IsNullOrEmpty(saveFileDialog.FileName))
+                {
+                    // Save the edited image to the selected file
+                    editedImage.Save(saveFileDialog.FileName);
+
+                    PCXheaderInfoBox.Controls.Clear();
+                    PCXheaderInfoBox.Clear();
+
+                    // Dispose the Bitmap objects
+                    originalImage = null;
+                    editedImage = null;
+                    imageChannel.Image = null;
+                    ViewImage.Image = null;
+
+                    imageNameLabel.Text = null;
+
+                    hideCloseButton();
+                }
+            }
+            else if (result == DialogResult.Cancel) // Do nothing and keep editing
+            {
+                // Do nothing, let the user continue editing
+            }
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        // Enum to represent background fill options.
+        private enum BackgroundFillOption
+        {
+            Transparent,
+            Color,
+            Image
+        }
+
     }
 }
