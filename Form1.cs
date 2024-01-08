@@ -10,6 +10,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Reflection.Emit;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Image_Processing
 {
@@ -28,23 +29,28 @@ namespace Image_Processing
         private Bitmap? blueChannelImage;
         private Bitmap? foregroundImage;
         private Bitmap? editedImage;
-        private PictureBox? histogramPictureBox;
         private int maxFrequencyIntensity = -1;
         private int maxCount;
         private string? selectedFilePath;
         private string? imageFileName;
+        private Chart histogramChart;
 
         private bool isNightMode = false;
 
-        // Create a new form to display the histogram
-        Form histogramForm = new Form();
-
         // Degraded image
         private Bitmap? degradedImg;
-        public void hidePanels()
+        public void hideFeaturesPanels()
         {
-            editPanel.Visible = false;
-            // panel2.Visible = false;
+            Panel_Enhancement.Visible = false;
+            Panel_Spatial.Visible = false;
+            Panel_RestoreDegrade.Visible = false;
+        }
+
+        public void changeButtonColor()
+        {
+            Button_SpatialFiltering.BackColor = SystemColors.ScrollBar;
+            Button_BasicEnhancement.BackColor = SystemColors.ControlLightLight;
+            Button_RestoreDegrade.BackColor = SystemColors.ScrollBar;
         }
 
         public void hideCompressed()
@@ -66,30 +72,28 @@ namespace Image_Processing
         {
             InitializeComponent();
             Load += new EventHandler(MainForm_Load);
-            // panel2.Location = editPanel.Location;
+            Panel_Spatial.Location = Panel_imageEnhancement.Location;
+            Panel_Enhancement.Location = Panel_imageEnhancement.Location;
+            Panel_RestoreDegrade.Location = Panel_imageEnhancement.Location;
+            Panel_Spatial.Dock = DockStyle.Fill;
+            Panel_Enhancement.Dock = DockStyle.Fill;
+            Panel_RestoreDegrade.Dock = DockStyle.Fill;
 
             imageChannel.MouseMove += Control_MouseMove;
+
+            InitializeHistogramChart();
+            Form histogramForm = new Form();
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
-            hidePanels();
+            hideFeaturesPanels();
             hideCompressed();
             hideCloseButton();
+            changeButtonColor();
 
             imageChannel.Visible = true;
-            editPanel.Visible = true;
-        }
-
-        private void panel1Button_Click(object sender, EventArgs e)
-        {
-            hidePanels();
-            editPanel.Visible = true;
-        }
-
-        private void panel2Button_Click(object sender, EventArgs e)
-        {
-            hidePanels();
-            // panel2.Visible = true;
+            Panel_Enhancement.Visible = true;
+            Label_Feature.Text = "Image Enhancement";
         }
 
         private void exitButton_Click(object sender, EventArgs e)
@@ -116,6 +120,8 @@ namespace Image_Processing
             if (isNightMode)
             {
                 // Night mode settings
+                this.BackColor = Color.FromArgb(30, 30, 30);
+
                 tableLayoutPanel1.BackColor = Color.FromArgb(30, 30, 30);
                 menuStrip1.BackColor = Color.FromArgb(52, 52, 52);
                 displayOriginalPanel.BackColor = Color.FromArgb(56, 56, 56);
@@ -134,6 +140,35 @@ namespace Image_Processing
                 otherButtons.BackColor = Color.FromArgb(56, 56, 56);
                 buttonsPanel.BackColor = Color.FromArgb(30, 30, 30);
                 buttonsSection.BackColor = Color.FromArgb(30, 30, 30);
+
+                // Features Panel
+                Panel_FeatureButton.BackColor = Color.FromArgb(30, 30, 30);
+                featuresPanel.BackColor = Color.FromArgb(30, 30, 30);
+                Panel_FeatureName.BackColor = Color.FromArgb(56, 56, 56);
+                //rgbPanel.BackColor = Color.FromArgb(56, 56, 56);
+                //grayPanel.BackColor = Color.FromArgb(56, 56, 56);
+                //bwPanel.BackColor = Color.FromArgb(56, 56, 56);
+                //Panel_Gamm.BackColor = Color.FromArgb(56, 56, 56);
+                Panel_ShowNoiseHistogram.BackColor = Color.FromArgb(56, 56, 56);
+                allFeaturesPanel.BackColor = Color.FromArgb(30, 30, 30);
+                mainFeatures.BackColor = Color.FromArgb(30, 30, 30);
+
+                Panel_Enhancement.BackColor = Color.FromArgb(56, 56, 56);
+
+                Label_RGBChannel.ForeColor = Color.White;
+                Label_Grayscale.ForeColor = Color.White;
+                Label_BWAdjust.ForeColor = Color.White;
+                Label_Gamma.ForeColor = Color.White;
+                //adjustBW.ForeColor = Color.White;
+                //inputGamma.ForeColor = Color.White;
+                Label_Feature.ForeColor = Color.White;
+
+                // Spatial Filtering
+                Panel_Spatial.BackColor = Color.FromArgb(56, 56, 56);
+
+                Label_Smooth.ForeColor = Color.White;
+                Label_Sharpening.ForeColor = Color.White;
+                Label_Gradient.ForeColor = Color.White;
 
                 // Palette
                 paletteDisplay.BackColor = Color.FromArgb(56, 56, 56);
@@ -177,12 +212,11 @@ namespace Image_Processing
                 editPanel.ForeColor = Color.White;
 
                 darkLightMode.Image = Properties.Resources.lightmode;
-                // Add other controls or settings you want to modify for night mode
             }
             else
             {
                 // Light mode settings
-                this.BackColor = SystemColors.Control; // Default background color
+                this.BackColor = SystemColors.ControlLight; // Default background color
 
                 imageChannel.BackColor = SystemColors.Control;
                 menuStrip1.BackColor = SystemColors.Menu;
@@ -198,15 +232,13 @@ namespace Image_Processing
                 filterToolStripMenuItem.BackColor = SystemColors.Control;
                 spatialFiltering.BackColor = SystemColors.Control;
 
-                label1.ForeColor = SystemColors.ControlText;
-                label3.ForeColor = SystemColors.ControlText;
-                label4.ForeColor = SystemColors.ControlText;
-                label2.ForeColor = SystemColors.ControlText;
-                label5.ForeColor = SystemColors.ControlText;
-                label6.ForeColor = SystemColors.ControlText;
-                label7.ForeColor = SystemColors.ControlText;
-                label8.ForeColor = SystemColors.ControlText;
-                label9.ForeColor = SystemColors.ControlText;
+                Label_Gamma.ForeColor = SystemColors.ControlText;
+                //adjustBW.ForeColor = SystemColors.ControlText;
+                //inputGamma.ForeColor = SystemColors.ControlText;
+                Label_Degrade.ForeColor = SystemColors.ControlText;
+                Label_Salt.ForeColor = SystemColors.ControlText;
+                Label_Pepper.ForeColor = SystemColors.ControlText;
+                Label_Q.ForeColor = SystemColors.ControlText;
                 PCXheaderInfoBox.ForeColor = SystemColors.MenuText;
                 originalImageLabel.ForeColor = SystemColors.ControlText;
                 menu1ToolStripMenuItem.ForeColor = SystemColors.ControlText;
@@ -676,6 +708,31 @@ namespace Image_Processing
             }
         }
 
+        // ---------------------- HISTOGRAM ----------------------
+        private void InitializeHistogramChart()
+        {
+            histogramChart = new Chart();
+            histogramChart.Dock = DockStyle.Fill;
+            histogramChart.Series.Clear();
+            histogramChart.ChartAreas.Add("Histogram");
+            histogramChart.ChartAreas["Histogram"].AxisX.Title = "Intensity Level";
+            histogramChart.ChartAreas["Histogram"].AxisY.Title = "Frequency";
+
+            Series redSeries = new Series("Red");
+            Series greenSeries = new Series("Green");
+            Series blueSeries = new Series("Blue");
+
+            redSeries.ChartType = SeriesChartType.Column;
+            greenSeries.ChartType = SeriesChartType.Column;
+            blueSeries.ChartType = SeriesChartType.Column;
+
+            histogramChart.Series.Add(redSeries);
+            histogramChart.Series.Add(greenSeries);
+            histogramChart.Series.Add(blueSeries);
+
+            this.Controls.Add(histogramChart);
+        }
+
         // Handle the "Red" button click event to display the Red channel of the original image.
         private void Red_Click(object sender, EventArgs e)
         {
@@ -688,76 +745,60 @@ namespace Image_Processing
             if (editedImage != null)
             {
                 redChannelImage = SplitChannel(editedImage, ColorChannel.Red); // Extract the Red channel from the original image and store it in redChannelImage.
-                histogramForm.Text = "Red Channel Histogram"; // Update the title of the histogramForm
                 imageChannel.Image = redChannelImage; // Display the Red channel image in the imageChannel PictureBox.
+                editedImage = redChannelImage;
 
-                // Call the modified ShowHistogram method and get the histogram colors
-                Color[] histogramColors = ShowHistogram(redChannelImage); // Call a modified ShowHistogram method to display the histogram for the Red channel.
+                DisplayHistogram(ColorChannel.Red);
             }
             else if (editedImage == null && originalImage != null)
             {
                 redChannelImage = SplitChannel(originalImage, ColorChannel.Red); // Extract the Red channel from the original image and store it in redChannelImage.
-                histogramForm.Text = "Red Channel Histogram"; // Update the title of the histogramForm
                 imageChannel.Image = redChannelImage; // Display the Red channel image in the imageChannel PictureBox.
+                editedImage = redChannelImage;
 
-                // Call the modified ShowHistogram method and get the histogram colors
-                Color[] histogramColors = ShowHistogram(redChannelImage); // Call a modified ShowHistogram method to display the histogram for the Red channel.
+                DisplayHistogram(ColorChannel.Red);
             }
         }
 
         // Handle the "Green" button click event to display the Green channel of the original image.
         private void Green_Click(object sender, EventArgs e)
         {
-            // Check if an image is loaded
-            if (originalImage == null)
-            {
-                return;
-            }
-
             if (editedImage != null)
             {
                 greenChannelImage = SplitChannel(editedImage, ColorChannel.Green); // Extract the Green channel from the original image and store it in greenChannelImage.
-                histogramForm.Text = "Green Channel Histogram"; // Update the title of the histogramForm.
                 imageChannel.Image = greenChannelImage; // Display the Green channel image in the imageChannel PictureBox.
+                editedImage = greenChannelImage;
 
-                // Call the modified ShowHistogram method and get the histogram colors
-                Color[] histogramColors = ShowHistogram(greenChannelImage);
+                DisplayHistogram(ColorChannel.Green);
             }
             else if (editedImage == null && originalImage != null)
             {
                 greenChannelImage = SplitChannel(originalImage, ColorChannel.Green); // Extract the Green channel from the original image and store it in greenChannelImage.
-                histogramForm.Text = "Green Channel Histogram"; // Update the title of the histogramForm.
                 imageChannel.Image = greenChannelImage; // Display the Green channel image in the imageChannel PictureBox.
+                editedImage = greenChannelImage;
 
-                // Call the modified ShowHistogram method and get the histogram colors
-                Color[] histogramColors = ShowHistogram(greenChannelImage);
+                DisplayHistogram(ColorChannel.Green);
             }
         }
 
         // Handle the "Blue" button click event to display the Blue channel of the original image.
         private void Blue_Click(object sender, EventArgs e)
         {
-            // Check if an image is loaded
-            if (originalImage == null)
-            {
-                return;
-            }
-
             if (editedImage != null)
             {
                 blueChannelImage = SplitChannel(editedImage, ColorChannel.Blue); // Extract the Blue channel from the original image and store it in blueChannelImage.
                 imageChannel.Image = blueChannelImage; // Display the Blue channel image in the imageChannel PictureBox.
+                editedImage = blueChannelImage;
 
-                // Call the modified ShowHistogram method and get the histogram colors
-                Color[] histogramColors = ShowHistogram(blueChannelImage);
+                DisplayHistogram(ColorChannel.Blue);
             }
             else if (editedImage == null && originalImage != null)
             {
                 blueChannelImage = SplitChannel(originalImage, ColorChannel.Blue); // Extract the Blue channel from the original image and store it in blueChannelImage.
                 imageChannel.Image = blueChannelImage; // Display the Blue channel image in the imageChannel PictureBox.
+                editedImage = blueChannelImage;
 
-                // Call the modified ShowHistogram method and get the histogram colors
-                Color[] histogramColors = ShowHistogram(blueChannelImage);
+                DisplayHistogram(ColorChannel.Blue);
             }
         }
 
@@ -789,133 +830,133 @@ namespace Image_Processing
             return channelImage;
         }
 
-        private Color[] ShowHistogram(Bitmap channelImage)
+        private void DisplayHistogram(ColorChannel channel)
         {
+            Bitmap image = (Bitmap)imageChannel.Image;
 
-            // Clear the existing image if it's not null
-            if (displayHistogram.Image != null)
+            // Clear all chart series
+            foreach (var series in histogramChart.Series)
             {
-                displayHistogram.Image.Dispose();
-                displayHistogram.Image = null;
+                series.Points.Clear();
             }
 
-            // Ensure the channelImage is not null
-            if (channelImage == null)
+            if (image != null)
             {
-                return new Color[256]; // Return an empty color array
+                int[] histogram = Calculate(image, channel);
+
+                switch (channel)
+                {
+                    case ColorChannel.Red:
+                        histogramChart.Series["Red"].Points.Clear();
+
+                        for (int i = 0; i < histogram.Length; i++)
+                        {
+                            histogramChart.Series["Red"].Points.AddXY(i, histogram[i]);
+                        }
+                        break;
+
+                    case ColorChannel.Green:
+                        histogramChart.Series["Green"].Points.Clear();
+
+                        for (int i = 0; i < histogram.Length; i++)
+                        {
+                            histogramChart.Series["Green"].Points.AddXY(i, histogram[i]);
+                        }
+                        break;
+
+                    case ColorChannel.Blue:
+                        histogramChart.Series["Blue"].Points.Clear();
+
+                        for (int i = 0; i < histogram.Length; i++)
+                        {
+                            histogramChart.Series["Blue"].Points.AddXY(i, histogram[i]);
+                        }
+                        break;
+                }
+
+                var chart = histogramChart;
+                chart.Parent = Panel_HistogramContainer;
+                // Optionally clear the panel after some time or user interaction
+                ClearPanelAfterDelay(chart, Panel_HistogramContainer, TimeSpan.FromSeconds(10));
+            }
+        }
+
+        private void ClearPanelAfterDelay(Chart chart, Panel panel, TimeSpan delay)
+        {
+            Task.Delay(delay).ContinueWith(_ =>
+            {
+                // Clear the panel after the specified delay
+                chart.Parent = null;
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void DisplayOverallHistogram(Bitmap image)
+        {
+            // Clear all chart series
+            foreach (var series in histogramChart.Series)
+            {
+                series.Points.Clear();
             }
 
-            // Initialize an array to store the histogram data for each intensity level
+            if (image != null)
+            {
+                int[] overallHistogram = CalculateOverallHistogram(image);
+
+                // Display overall histogram
+                histogramChart.Series["Overall"].Points.Clear();
+                for (int i = 0; i < overallHistogram.Length; i++)
+                {
+                    histogramChart.Series["Overall"].Points.AddXY(i, overallHistogram[i]);
+                }
+
+                var chart = histogramChart;
+                chart.Parent = Panel_HistogramContainer;
+            }
+        }
+
+        private int[] Calculate(Bitmap image, ColorChannel channel)
+        {
             int[] histogram = new int[256];
-            float max = 0;
-
-            // Iterate through each pixel in the image and update the histogram
-            for (int x = 0; x < channelImage.Width; x++)
+            for (int x = 0; x < image.Width; x++)
             {
-                for (int y = 0; y < channelImage.Height; y++)
+                for (int y = 0; y < image.Height; y++)
                 {
-                    Color pixel = channelImage.GetPixel(x, y);
-                    int value = channelImage == redChannelImage ? pixel.R :
-                                channelImage == greenChannelImage ? pixel.G : pixel.B;
+                    Color pixelColor = image.GetPixel(x, y);
+                    int intensity = 0;
 
-                    histogram[value]++;
-                    if (max < histogram[value])
+                    switch (channel)
                     {
-                        max = histogram[value];
-                        maxFrequencyIntensity = value;
+                        case ColorChannel.Red:
+                            intensity = pixelColor.R;
+                            break;
+                        case ColorChannel.Green:
+                            intensity = pixelColor.G;
+                            break;
+                        case ColorChannel.Blue:
+                            intensity = pixelColor.B;
+                            break;
                     }
+
+                    histogram[intensity]++;
                 }
             }
+            return histogram;
+        }
 
-            // Find the maximum count in the histogram for scaling
-            maxCount = histogram.Max();
-            int histWidth = 550; // Set the width of the histogram
-            int histHeight = 350; // Set the height of the histogram
-
-            Color[] histogramColors = new Color[256];
-
-            using (Bitmap histogramBitmap = new Bitmap(histWidth, histHeight))
-            using (Graphics g = Graphics.FromImage(histogramBitmap))
+        private int[] CalculateOverallHistogram(Bitmap image)
+        {
+            int[] overallHistogram = new int[256];
+            for (int x = 0; x < image.Width; x++)
             {
-                g.Clear(Color.White);
-
-                // Add vertical lines every 50 intensity levels and display intensity values
-                for (int i = 50; i < 256; i += 50)
+                for (int y = 0; y < image.Height; y++)
                 {
-                    int x = i * (histWidth / 256);
-                    g.DrawLine(Pens.Black, x, 0, x, histHeight);
+                    Color pixelColor = image.GetPixel(x, y);
+                    int intensity = (pixelColor.R + pixelColor.G + pixelColor.B) / 3; // Calculate overall intensity
+
+                    overallHistogram[intensity]++;
                 }
-
-                // Add horizontal lines every 200 pixels
-                for (int i = 500; i < maxCount; i += 500)
-                {
-                    int y = histHeight - (int)((i / (float)maxCount) * histHeight);
-                    g.DrawLine(Pens.Black, 0, y, histWidth, y);
-                }
-
-                for (int i = 0; i < histogram.Length; i++)
-                {
-                    float pct = histogram[i] / max; // Calculate the percentage of the max pixel count
-
-                    // Calculate the height of the bar based on the percentage
-                    int barHeight = (int)(pct * histHeight);
-
-                    // Calculate vertical position for bars
-                    int barY = histHeight - barHeight;
-
-                    // Draw the histogram bar for the channel
-                    // Determine the channel color
-                    Color channelColor;
-                    if (channelImage == redChannelImage)
-                    {
-                        channelColor = Color.Pink;
-                    }
-                    else if (channelImage == greenChannelImage)
-                    {
-                        channelColor = Color.LightGreen;
-                    }
-                    else if (channelImage == blueChannelImage)
-                    {
-                        channelColor = Color.LightBlue;
-                    }
-                    else
-                    {
-                        // If none of the three channels, use gray color
-                        channelColor = Color.Gray;
-                    }
-
-                    g.FillRectangle(new SolidBrush(channelColor),
-                        new Rectangle(i * (histWidth / 256), barY, histWidth / 256, barHeight)
-                    );
-
-                    histogramColors[i] = channelColor;
-                }
-
-                // Add vertical lines every 50 intensity levels and display intensity values
-                for (int i = 50; i < 256; i += 50)
-                {
-                    int x = i * (histWidth / 256);
-                    g.DrawLine(Pens.Black, x, 0, x, histHeight);
-                    g.DrawString(i.ToString(), new Font("Arial", 8), Brushes.Black, x, histHeight - 20);
-                }
-
-                // Add horizontal lines every 200 pixels
-                for (int i = 500; i < maxCount; i += 500)
-                {
-                    int y = histHeight - (int)((i / (float)maxCount) * histHeight);
-                    g.DrawLine(Pens.Black, 0, y, histWidth, y);
-                    g.DrawString(i.ToString(), new Font("Arial", 8), Brushes.Black, 5, y);
-                }
-
-                // Set the Image property of displayHistogram
-                displayHistogram.Image = histogramBitmap;
-
-                // Adjust the PictureBox properties
-                displayHistogram.SizeMode = PictureBoxSizeMode.StretchImage; // You can adjust this based on your preference
-                displayHistogram.Dock = DockStyle.Fill; // DockStyle.Fill ensures that the image fills the entire PictureBox
             }
-
-            return histogramColors;
+            return overallHistogram;
         }
 
         // Define an enumeration called ColorChannel to represent the three primary color channels.
@@ -929,6 +970,7 @@ namespace Image_Processing
         // ------------------ Grayscale ------------------------
         private void Grayscale_Click(object sender, EventArgs e)
         {
+
             // Check if an image is loaded
             if (originalImage == null)
             {
@@ -974,6 +1016,7 @@ namespace Image_Processing
         // ------------------ Negative ------------------------
         private void Negative_Click(object sender, EventArgs e)
         {
+
             // Check if an image is loaded
             if (originalImage == null)
             {
@@ -1020,6 +1063,7 @@ namespace Image_Processing
         // ------------------ BLACK AND WHITE ------------------------
         private void BW_Scroll(object sender, EventArgs e)
         {
+
             if (originalImage == null)
             {
                 return;
@@ -1071,6 +1115,8 @@ namespace Image_Processing
         // function for gamma transformation
         private void GammaTransform_Click(object sender, EventArgs e)
         {
+
+
             // if an image is loaded and gamma textbox is not empty
             if (originalImage != null && !string.IsNullOrEmpty(gamma_textbox.Text))
             {
@@ -1245,7 +1291,7 @@ namespace Image_Processing
                         imageChannel.Image = resultImage;
                         // Store degraded image in separate variable for restoration
                         degradedImg = resultImage;
-                        ShowHistogram(resultImage);
+                        DisplayOverallHistogram(resultImage);
                     }
                 }
                 else if (saltProbability >= 0.6 || pepperProbability >= 0.6)
@@ -1331,7 +1377,7 @@ namespace Image_Processing
                 imageChannel.Image = resultImage;
                 // Store degraded image in separate variable for restoration
                 degradedImg = resultImage;
-                ShowHistogram(resultImage);
+                DisplayOverallHistogram(resultImage);
             }
         }
 
@@ -1413,7 +1459,7 @@ namespace Image_Processing
                 imageChannel.Image = resultImage;
                 // Store degraded image in separate variable for restoration
                 degradedImg = resultImage;
-                ShowHistogram(resultImage);
+                DisplayOverallHistogram(resultImage);
             }
         }
 
@@ -2464,6 +2510,7 @@ namespace Image_Processing
 
         private void rawImage_Click(object sender, EventArgs e)
         {
+
             if (originalImage == null)
             {
                 return;
@@ -2479,6 +2526,7 @@ namespace Image_Processing
         // -------------------------- CLOSING IMAGE ----------------------------
         private void closeImage_Click(object sender, EventArgs e)
         {
+
             // Display a message box asking the user if they want to close or save the image
             DialogResult result = MessageBox.Show("Do you want to close the image without saving changes?", "Close Image", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
 
@@ -2560,6 +2608,90 @@ namespace Image_Processing
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void SpatialFiltering_Click(object sender, EventArgs e)
+        {
+            hideFeaturesPanels();
+            Panel_Spatial.Visible = true;
+
+            Label_Feature.Text = "Spatial Filtering";
+
+            changeButtonColor();
+            if (isNightMode)
+            {
+                Button_RestoreDegrade.BackColor = SystemColors.ScrollBar;
+                Button_SpatialFiltering.BackColor = Color.FromArgb(56, 56, 56);
+                Button_BasicEnhancement.BackColor = SystemColors.ScrollBar;
+                Button_SpatialFiltering.Image = Properties.Resources.filter_light;
+                Button_BasicEnhancement.Image = Properties.Resources.basic;
+                Button_RestoreDegrade.Image = Properties.Resources.restore;
+            }
+            else
+            {
+                Button_RestoreDegrade.BackColor = SystemColors.ScrollBar;
+                Button_SpatialFiltering.BackColor = SystemColors.ControlLightLight;
+                Button_BasicEnhancement.BackColor = SystemColors.ScrollBar;
+                Button_SpatialFiltering.Image = Properties.Resources.filter;
+                Button_BasicEnhancement.Image = Properties.Resources.basic;
+                Button_RestoreDegrade.Image = Properties.Resources.restore;
+            }
+        }
+
+        private void basicEnhancement_Click(object sender, EventArgs e)
+        {
+            hideFeaturesPanels();
+            Panel_Enhancement.Visible = true;
+
+            Label_Feature.Text = "Image Enhancement";
+
+            changeButtonColor();
+            if (isNightMode)
+            {
+                Button_RestoreDegrade.BackColor = SystemColors.ScrollBar;
+                Button_SpatialFiltering.BackColor = SystemColors.ScrollBar;
+                Button_BasicEnhancement.BackColor = Color.FromArgb(56, 56, 56);
+                Button_SpatialFiltering.Image = Properties.Resources.filter;
+                Button_BasicEnhancement.Image = Properties.Resources.basic_light;
+                Button_RestoreDegrade.Image = Properties.Resources.restore;
+            }
+            else
+            {
+                Button_RestoreDegrade.BackColor = SystemColors.ScrollBar;
+                Button_SpatialFiltering.BackColor = SystemColors.ScrollBar;
+                Button_BasicEnhancement.BackColor = SystemColors.ControlLightLight;
+                Button_SpatialFiltering.Image = Properties.Resources.filter;
+                Button_BasicEnhancement.Image = Properties.Resources.basic;
+                Button_RestoreDegrade.Image = Properties.Resources.restore;
+            }
+        }
+
+        private void Button_RestoreDegrade_Click(object sender, EventArgs e)
+        {
+            hideFeaturesPanels();
+            Panel_RestoreDegrade.Visible = true;
+
+            Label_Feature.Text = "Image Restoration and Degradation";
+
+            changeButtonColor();
+            if (isNightMode)
+            {
+                Button_RestoreDegrade.BackColor = Color.FromArgb(56, 56, 56);
+                Button_SpatialFiltering.BackColor = SystemColors.ScrollBar;
+                Button_BasicEnhancement.BackColor = SystemColors.ScrollBar;
+                Button_SpatialFiltering.Image = Properties.Resources.filter;
+                Button_BasicEnhancement.Image = Properties.Resources.basic;
+                Button_RestoreDegrade.Image = Properties.Resources.restore_light;
+            }
+            else
+            {
+                Button_RestoreDegrade.BackColor = SystemColors.ControlLightLight;
+                Button_SpatialFiltering.BackColor = SystemColors.ScrollBar;
+                Button_BasicEnhancement.BackColor = SystemColors.ScrollBar;
+                Button_SpatialFiltering.Image = Properties.Resources.filter;
+                Button_BasicEnhancement.Image = Properties.Resources.basic;
+                Button_RestoreDegrade.Image = Properties.Resources.restore;
+            }
         }
 
         // Enum to represent background fill options.
