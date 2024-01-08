@@ -11,6 +11,7 @@ using System.Reflection.Emit;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms.DataVisualization.Charting;
+using Image = System.Drawing.Image;
 
 namespace Image_Processing
 {
@@ -33,12 +34,21 @@ namespace Image_Processing
         private int maxCount;
         private string? selectedFilePath;
         private string? imageFileName;
+        private string imagesPath;
+        private string processedFolder;
+        private string[] imageFiles;
         private Chart histogramChart;
+
+        private List<Bitmap> processedImages = new List<Bitmap>(); // Declare a list to store processed images
+        private List<Bitmap> addColorImages = new List<Bitmap>();
+        private List<Bitmap> addImageImages = new List<Bitmap>();
 
         private bool isNightMode = false;
 
         // Degraded image
         private Bitmap? degradedImg;
+        private Bitmap? originalGrayImage; // Field to store the original grayscale image.
+
         public void hideFeaturesPanels()
         {
             Panel_Enhancement.Visible = false;
@@ -53,18 +63,26 @@ namespace Image_Processing
             Button_RestoreDegrade.BackColor = SystemColors.ScrollBar;
         }
 
-        public void hideCompressed()
+        public void hideEditedImages()
         {
-            imageChannel.Visible = false;
-            showOriginal.Visible = false;
-            showCompressed.Visible = false;
-            compressedLabel.Visible = false;
-            originalLabel.Visible = false;
+            Panel_CompressedImage.Visible = false;
+            Panel_EditedImage.Visible = false;
+            Panel_DisplaySpatial.Visible = false;
+            Panel_BatchProcessing.Visible = false;
+        }
+
+        public void clearSpatialPictureBox()
+        {
+            PBox_Image1.Image = null;
+            PBox_Image2.Image = null;
+            PBox_Image3.Image = null;
+            PBox_Image4.Image = null;
         }
 
         public void hideCloseButton()
         {
             imageNameLabel.Text = string.Empty;
+            imageNamePanel.Visible = false;
             closeImage.Visible = false;
         }
 
@@ -72,12 +90,20 @@ namespace Image_Processing
         {
             InitializeComponent();
             Load += new EventHandler(MainForm_Load);
+
+            // Features Panels
             Panel_Spatial.Location = Panel_imageEnhancement.Location;
             Panel_Enhancement.Location = Panel_imageEnhancement.Location;
             Panel_RestoreDegrade.Location = Panel_imageEnhancement.Location;
+            
             Panel_Spatial.Dock = DockStyle.Fill;
             Panel_Enhancement.Dock = DockStyle.Fill;
             Panel_RestoreDegrade.Dock = DockStyle.Fill;
+
+            // Dispay Image Panels
+            Panel_CompressedImage.Location = Panel_EditedImage.Location;
+            Panel_DisplaySpatial.Location = Panel_EditedImage.Location;
+            Panel_BatchProcessing.Location = Panel_EditedImage.Location;
 
             imageChannel.MouseMove += Control_MouseMove;
 
@@ -87,7 +113,7 @@ namespace Image_Processing
         private void MainForm_Load(object sender, EventArgs e)
         {
             hideFeaturesPanels();
-            hideCompressed();
+            hideEditedImages();
             hideCloseButton();
             changeButtonColor();
 
@@ -145,30 +171,66 @@ namespace Image_Processing
                 Panel_FeatureButton.BackColor = Color.FromArgb(30, 30, 30);
                 featuresPanel.BackColor = Color.FromArgb(30, 30, 30);
                 Panel_FeatureName.BackColor = Color.FromArgb(56, 56, 56);
-                //rgbPanel.BackColor = Color.FromArgb(56, 56, 56);
-                //grayPanel.BackColor = Color.FromArgb(56, 56, 56);
-                //bwPanel.BackColor = Color.FromArgb(56, 56, 56);
-                //Panel_Gamm.BackColor = Color.FromArgb(56, 56, 56);
                 Panel_ShowNoiseHistogram.BackColor = Color.FromArgb(56, 56, 56);
                 allFeaturesPanel.BackColor = Color.FromArgb(30, 30, 30);
                 mainFeatures.BackColor = Color.FromArgb(30, 30, 30);
 
+                // RGB Channels
+                Panel_Histogram.BackColor = Color.FromArgb(56, 56, 56);
+                Panel_HistogramContainer.BackColor = Color.FromArgb(56, 56, 56);
                 Panel_Enhancement.BackColor = Color.FromArgb(56, 56, 56);
 
-                Label_RGBChannel.ForeColor = Color.White;
-                Label_Grayscale.ForeColor = Color.White;
-                Label_BWAdjust.ForeColor = Color.White;
-                Label_Gamma.ForeColor = Color.White;
-                //adjustBW.ForeColor = Color.White;
-                //inputGamma.ForeColor = Color.White;
-                Label_Feature.ForeColor = Color.White;
+                Table_RGBChannel.BackColor = Color.FromArgb(56, 56, 56);
+                Table_Gray.BackColor = Color.FromArgb(56, 56, 56);
+                Table_BW.BackColor = Color.FromArgb(56, 56, 56);
+                bw_trackbar.BackColor = Color.FromArgb(56, 56, 56);
+                Table_Gamma.BackColor = Color.FromArgb(56, 56, 56);
+                Table_ShowHistogram.BackColor = Color.FromArgb(56, 56, 56);
+
+                Label_RGBChannel.ForeColor = SystemColors.ControlLight;
+                Label_Grayscale.ForeColor = SystemColors.ControlLight;
+                Label_BW.ForeColor = SystemColors.ControlLight;
+                Label_BWAdjust.ForeColor = SystemColors.ControlLight;
+                Label_Gamma.ForeColor = SystemColors.ControlLight;
+                Label_GammaValues.ForeColor = SystemColors.ControlLight;
+                Label_Feature.ForeColor = SystemColors.ControlLight;
+                Label_Histogram.ForeColor = SystemColors.ControlLight;
 
                 // Spatial Filtering
                 Panel_Spatial.BackColor = Color.FromArgb(56, 56, 56);
+                Panel_SmoothChannels.BackColor = Color.FromArgb(56, 56, 56);
+                Panel_SharpeningFilter.BackColor = Color.FromArgb(56, 56, 56);
+                Panel_Gradient.BackColor = Color.FromArgb(56, 56, 56);
 
-                Label_Smooth.ForeColor = Color.White;
-                Label_Sharpening.ForeColor = Color.White;
-                Label_Gradient.ForeColor = Color.White;
+                Label_Smooth.ForeColor = SystemColors.ControlLight;
+                Label_Sharpening.ForeColor = SystemColors.ControlLight;
+                Label_Gradient.ForeColor = SystemColors.ControlLight;
+
+                Panel_Laplacian.BackColor = Color.FromArgb(56, 56, 56);
+                Label_Laplacian.ForeColor = SystemColors.ControlLight;
+                Label_Laplacian1.ForeColor = SystemColors.ControlLight;
+                Label_Laplacian2.ForeColor = SystemColors.ControlLight;
+                Label_Laplacian3.ForeColor = SystemColors.ControlLight;
+
+                Table_SmoothChannels.BackColor = Color.FromArgb(56, 56, 56);
+                Table_SharpeningFilter.BackColor = Color.FromArgb(56, 56, 56);
+                Table_Gradient.BackColor = Color.FromArgb(56, 56, 56);
+
+                // Image Degradation
+                Label_Degrade.ForeColor = SystemColors.ControlLight;
+                Label_Salt.ForeColor = SystemColors.ControlLight;
+                Label_Pepper.ForeColor = SystemColors.ControlLight;
+                Label_Restoration.ForeColor = SystemColors.ControlLight;
+                Label_Q.ForeColor = SystemColors.ControlLight;
+                Label_OrderStat.ForeColor = SystemColors.ControlLight;
+                Label_NoiseHistogram.ForeColor = SystemColors.ControlLight;
+
+                Panel_RestoreDegrade.BackColor = Color.FromArgb(56, 56, 56);
+                Panel_NoiseHistogram.BackColor = Color.FromArgb(56, 56, 56);
+
+                Table_Degrade.BackColor = Color.FromArgb(56, 56, 56);
+                Table_Restoration.BackColor = Color.FromArgb(56, 56, 56);
+                Table_NoiseHistogram.BackColor = Color.FromArgb(56, 56, 56);
 
                 // Palette
                 paletteDisplay.BackColor = Color.FromArgb(56, 56, 56);
@@ -189,19 +251,13 @@ namespace Image_Processing
                 // Menu > File
                 openImageFileToolStripMenuItem.BackColor = Color.FromArgb(52, 52, 52);
                 openPCXFileToolStripMenuItem.BackColor = Color.FromArgb(52, 52, 52);
-                saveToolStripMenuItem.BackColor = Color.FromArgb(52, 52, 52);
-                saveAsToolStripMenuItem.BackColor = Color.FromArgb(52, 52, 52);
 
                 menuStrip1.ForeColor = Color.White;
                 openImageFileToolStripMenuItem.ForeColor = Color.White;
                 openPCXFileToolStripMenuItem.ForeColor = Color.White;
-                saveToolStripMenuItem.ForeColor = Color.White;
-                saveAsToolStripMenuItem.ForeColor = Color.White;
 
                 openImageFileToolStripMenuItem.Image = Properties.Resources.open_light;
                 openPCXFileToolStripMenuItem.Image = Properties.Resources.openpcx_light;
-                saveToolStripMenuItem.Image = Properties.Resources.save_light;
-                saveAsToolStripMenuItem.Image = Properties.Resources.saveas_light;
 
                 originalImageLabel.ForeColor = Color.FromArgb(212, 212, 212);
                 headerInfoLabel.ForeColor = Color.FromArgb(212, 212, 212);
@@ -216,38 +272,125 @@ namespace Image_Processing
             else
             {
                 // Light mode settings
-                this.BackColor = SystemColors.ControlLight; // Default background color
+                this.BackColor = SystemColors.ControlLight;
 
-                imageChannel.BackColor = SystemColors.Control;
-                menuStrip1.BackColor = SystemColors.Menu;
-                PCXheaderInfoBox.BackColor = SystemColors.ControlLight;
-                bw_trackbar.BackColor = SystemColors.Menu;
-                ViewImage.BackColor = SystemColors.ControlLight;
+                tableLayoutPanel1.BackColor = SystemColors.ControlLight;
+                menuStrip1.BackColor = Color.WhiteSmoke;
+                displayOriginalPanel.BackColor = SystemColors.ControlLightLight;
+                headerinfoPanel.BackColor = SystemColors.ControlLightLight;
+                ViewImage.BackColor = SystemColors.ControlLightLight;
+                PCXheaderInfoBox.BackColor = SystemColors.ControlLightLight;
+
+                pixelInfoPanel.BackColor = SystemColors.ControlLightLight;
+                imageNamePanel.BackColor = SystemColors.ControlLightLight;
+                closeImage.BackColor = SystemColors.ControlLightLight;
+                tabPanel.BackColor = SystemColors.Control;
+                editPanel.BackColor = SystemColors.ControlLight;
+                imageChannel.BackColor = SystemColors.ControlLight;
+                backgroundButtons.BackColor = SystemColors.ControlLightLight;
+                compressionButtons.BackColor = SystemColors.ControlLightLight;
+                otherButtons.BackColor = SystemColors.ControlLightLight;
+                buttonsPanel.BackColor = SystemColors.ControlLight;
+                buttonsSection.BackColor = SystemColors.ControlLight;
+
+                // Features Panel
+                Panel_FeatureButton.BackColor = SystemColors.ControlLight;
+                featuresPanel.BackColor = SystemColors.ControlLight;
+                Panel_FeatureName.BackColor = SystemColors.ControlLightLight;
+                Panel_ShowNoiseHistogram.BackColor = SystemColors.ControlLightLight;
+                allFeaturesPanel.BackColor = SystemColors.ControlLight;
+                mainFeatures.BackColor = SystemColors.ControlLight;
+
+                // RGB Channels
+                Panel_Histogram.BackColor = SystemColors.ControlLightLight;
+                Panel_HistogramContainer.BackColor = SystemColors.ControlLightLight;
+                Panel_Enhancement.BackColor = SystemColors.ControlLightLight;
+
+                Table_RGBChannel.BackColor = SystemColors.ControlLightLight;
+                Table_Gray.BackColor = SystemColors.ControlLightLight;
+                Table_BW.BackColor = SystemColors.ControlLightLight;
+                Table_Gamma.BackColor = SystemColors.ControlLightLight;
+                Table_ShowHistogram.BackColor = SystemColors.ControlLightLight;
+
+                Label_RGBChannel.ForeColor = Color.Black;
+                Label_Grayscale.ForeColor = Color.Black;
+                Label_BW.ForeColor = Color.Black;
+                Label_BWAdjust.ForeColor = Color.Black;
+                Label_Gamma.ForeColor = Color.Black;
+                Label_GammaValues.ForeColor = Color.Black;
+                Label_Feature.ForeColor = Color.Black;
+                Label_Histogram.ForeColor = Color.Black;
+
+                // Spatial Filtering
+                Panel_Spatial.BackColor = SystemColors.ControlLightLight;
+                Panel_SmoothChannels.BackColor = SystemColors.ControlLightLight;
+                Panel_SharpeningFilter.BackColor = SystemColors.ControlLightLight;
+                Panel_Gradient.BackColor = SystemColors.ControlLightLight;
+
+                Label_Smooth.ForeColor = Color.Black;
+                Label_Sharpening.ForeColor = Color.Black;
+                Label_Gradient.ForeColor = Color.Black;
+
+                Panel_Laplacian.BackColor = SystemColors.ControlLightLight;
+                Label_Laplacian.ForeColor = Color.Black;
+                Label_Laplacian1.ForeColor = Color.Black;
+                Label_Laplacian2.ForeColor = Color.Black;
+                Label_Laplacian3.ForeColor = Color.Black;
+
+                Table_SmoothChannels.BackColor = SystemColors.ControlLightLight;
+                Table_SharpeningFilter.BackColor = SystemColors.ControlLightLight;
+                Table_Gradient.BackColor = SystemColors.ControlLightLight;
+
+                // Image Degradation
+                Label_Degrade.ForeColor = Color.Black;
+                Label_Salt.ForeColor = Color.Black;
+                Label_Pepper.ForeColor = Color.Black;
+                Label_Restoration.ForeColor = Color.Black;
+                Label_Q.ForeColor = Color.Black;
+                Label_OrderStat.ForeColor = Color.Black;
+                Label_NoiseHistogram.ForeColor = Color.Black;
+
+                Panel_RestoreDegrade.BackColor = SystemColors.ControlLightLight;
+                Panel_NoiseHistogram.BackColor = SystemColors.ControlLightLight;
+
+                Table_Degrade.BackColor = SystemColors.ControlLightLight;
+                Table_Restoration.BackColor = SystemColors.ControlLightLight;
+                Table_NoiseHistogram.BackColor = SystemColors.ControlLightLight;
+
+                // Palette
+                paletteDisplay.BackColor = SystemColors.ControlLightLight;
+                colorPalettePanel.BackColor = SystemColors.ControlLightLight;
+
+                redPixel.ForeColor = Color.FromArgb(170, 170, 170);
+                greenPixel.ForeColor = Color.FromArgb(170, 170, 170);
+                bluePixel.ForeColor = Color.FromArgb(170, 170, 170);
+
+                // Light Mode
                 darkLightMode.BackColor = Color.Black;
-                menu1ToolStripMenuItem.BackColor = SystemColors.Control;
+
+                // Menu
+                menuStrip1.BackColor = Color.WhiteSmoke;
+                menuStrip1.RenderMode = ToolStripRenderMode.Professional;
+                menuStrip1.Renderer = new MyRenderer(); // Custom renderer for hover and select colors
+
+                // Menu > File
                 openImageFileToolStripMenuItem.BackColor = SystemColors.Control;
                 openPCXFileToolStripMenuItem.BackColor = SystemColors.Control;
-                menu2ToolStripMenuItem.BackColor = SystemColors.Control;
-                huffmanCodingToolStripMenuItem.BackColor = SystemColors.Control;
-                filterToolStripMenuItem.BackColor = SystemColors.Control;
-                spatialFiltering.BackColor = SystemColors.Control;
 
-                Label_Gamma.ForeColor = SystemColors.ControlText;
-                //adjustBW.ForeColor = SystemColors.ControlText;
-                //inputGamma.ForeColor = SystemColors.ControlText;
-                Label_Degrade.ForeColor = SystemColors.ControlText;
-                Label_Salt.ForeColor = SystemColors.ControlText;
-                Label_Pepper.ForeColor = SystemColors.ControlText;
-                Label_Q.ForeColor = SystemColors.ControlText;
-                PCXheaderInfoBox.ForeColor = SystemColors.MenuText;
-                originalImageLabel.ForeColor = SystemColors.ControlText;
-                menu1ToolStripMenuItem.ForeColor = SystemColors.ControlText;
-                openImageFileToolStripMenuItem.ForeColor = SystemColors.ControlText;
-                openPCXFileToolStripMenuItem.ForeColor = SystemColors.ControlText;
-                menu2ToolStripMenuItem.ForeColor = SystemColors.ControlText;
-                huffmanCodingToolStripMenuItem.ForeColor = SystemColors.ControlText;
-                filterToolStripMenuItem.ForeColor = SystemColors.ControlText;
-                spatialFiltering.ForeColor = SystemColors.ControlText;
+                menuStrip1.ForeColor = Color.Black;
+                openImageFileToolStripMenuItem.ForeColor = Color.Black;
+                openPCXFileToolStripMenuItem.ForeColor = Color.Black;
+
+                openImageFileToolStripMenuItem.Image = Properties.Resources.open;
+                openPCXFileToolStripMenuItem.Image = Properties.Resources.openpcx;
+
+                originalImageLabel.ForeColor = Color.Black;
+                headerInfoLabel.ForeColor = Color.Black;
+                PCXheaderInfoBox.ForeColor = Color.Black;
+                colorPalette.ForeColor = Color.Black;
+                pixelInfo.ForeColor = Color.Black;
+                imageNameLabel.ForeColor = Color.Black;
+                editPanel.ForeColor = Color.Black;
 
                 darkLightMode.Image = Properties.Resources.darkmode_light;
                 // Reset other controls or settings modified for night mode
@@ -275,6 +418,9 @@ namespace Image_Processing
         // ViewImage_Click event handler is triggered when the "View Image" button is clicked.
         private void ViewImage_Click(object sender, EventArgs e)
         {
+            hideEditedImages();
+            Panel_EditedImage.Visible = true;
+
             // Create an OpenFileDialog to allow the user to select an image file.
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
@@ -312,11 +458,14 @@ namespace Image_Processing
                         {
                             editedImage = null;
                         }
+
+                        clearSpatialPictureBox();
                         imageChannel.Image = null;
                         degradedImg = null; // Empty if there's previous image.
 
                         hideCloseButton();
                         closeImage.Visible = true;
+                        imageNamePanel.Visible = true;
 
                         // Now you can use 'fileName' and 'fileExtension' as needed.
                         if (isNightMode)
@@ -337,6 +486,9 @@ namespace Image_Processing
         // ViewPCX_Click event handler is triggered when the "View PCX" button is clicked.
         private void ViewPCX_Click(object sender, EventArgs e)
         {
+            hideEditedImages();
+            Panel_EditedImage.Visible = true;
+
             // Create an OpenFileDialog to allow the user to select a PCX image file.
             using (OpenFileDialog openFileDialog_1 = new OpenFileDialog())
             {
@@ -416,12 +568,15 @@ namespace Image_Processing
                             {
                                 editedImage = null;
                             }
+
+                            clearSpatialPictureBox();
                             ViewImage.Image = originalImage;
                             imageChannel.Image = null; // Empty if there's a previously uploaded image.
                             degradedImg = null; // Empty if there's previous image.
 
                             hideCloseButton();
                             closeImage.Visible = true;
+                            imageNamePanel.Visible = true;
 
                             // Now you can use 'fileName' and 'fileExtension' as needed.
                             imageNameLabel.Text = $"{fileName}";
@@ -470,6 +625,9 @@ namespace Image_Processing
 
         private void FlipHorizontalButton_Click(object sender, EventArgs e)
         {
+            hideEditedImages();
+            Panel_EditedImage.Visible = true;
+
             // Check if an image is loaded
             if (originalImage == null)
             {
@@ -492,6 +650,8 @@ namespace Image_Processing
 
         private void FlipVerticalButton_Click(object sender, EventArgs e)
         {
+            hideEditedImages();
+            Panel_EditedImage.Visible = true;
 
             // Check if an image is loaded
             if (originalImage == null)
@@ -515,6 +675,9 @@ namespace Image_Processing
 
         private Bitmap FlipImage(Bitmap image, bool flipHorizontal, bool flipVertical)
         {
+            hideEditedImages();
+            Panel_EditedImage.Visible = true;
+
             editedImage = new Bitmap(image.Width, image.Height);
 
             using (Graphics g = Graphics.FromImage(editedImage))
@@ -536,6 +699,9 @@ namespace Image_Processing
 
         private void RotateClockwiseButton_Click(object sender, EventArgs e)
         {
+            hideEditedImages();
+            Panel_EditedImage.Visible = true;
+
             // Check if an image is loaded
             if (originalImage == null)
             {
@@ -558,6 +724,9 @@ namespace Image_Processing
 
         private void RotateCounterClockwiseButton_Click(object sender, EventArgs e)
         {
+            hideEditedImages();
+            Panel_EditedImage.Visible = true;
+
             // Check if an image is loaded
             if (originalImage == null)
             {
@@ -580,6 +749,9 @@ namespace Image_Processing
 
         private Bitmap RotateImage(Bitmap image, RotateFlipType rotateFlipType)
         {
+            hideEditedImages();
+            Panel_EditedImage.Visible = true;
+
             editedImage = (Bitmap)image.Clone();
             editedImage.RotateFlip(rotateFlipType);
             return editedImage;
@@ -721,14 +893,17 @@ namespace Image_Processing
             Series redSeries = new Series("Red");
             Series greenSeries = new Series("Green");
             Series blueSeries = new Series("Blue");
+            Series overallSeries = new Series("Overall");
 
             redSeries.ChartType = SeriesChartType.Column;
             greenSeries.ChartType = SeriesChartType.Column;
             blueSeries.ChartType = SeriesChartType.Column;
+            overallSeries.ChartType = SeriesChartType.Column;
 
             histogramChart.Series.Add(redSeries);
             histogramChart.Series.Add(greenSeries);
             histogramChart.Series.Add(blueSeries);
+            histogramChart.Series.Add(overallSeries);
 
             this.Controls.Add(histogramChart);
         }
@@ -736,6 +911,9 @@ namespace Image_Processing
         // Handle the "Red" button click event to display the Red channel of the original image.
         private void Red_Click(object sender, EventArgs e)
         {
+            hideEditedImages();
+            Panel_EditedImage.Visible = true;
+
             // Check if an image is loaded
             if (originalImage == null)
             {
@@ -910,7 +1088,7 @@ namespace Image_Processing
                 }
 
                 var chart = histogramChart;
-                chart.Parent = Panel_HistogramContainer;
+                chart.Parent = Panel_ShowNoiseHistogram;
             }
         }
 
@@ -1182,6 +1360,9 @@ namespace Image_Processing
         // Button for Spatial Filtering
         private void spatialFiltering_Click(object sender, EventArgs e)
         {
+            hideEditedImages();
+            Panel_DisplaySpatial.Visible = true;
+
             // Check if the originalImage has been loaded
             if (originalImage != null)
             {
@@ -1849,12 +2030,8 @@ namespace Image_Processing
 
         private void RLECompression_click(object sender, EventArgs e)
         {
-            hideCompressed();
-            showOriginal.Visible = true;
-            showCompressed.Visible = true;
-
-            originalLabel.Visible = true;
-            compressedLabel.Visible = true;
+            hideEditedImages();
+            Panel_CompressedImage.Visible = true;
 
             if (originalImage != null && selectedFilePath != null && pcxData != null)
             {
@@ -1932,10 +2109,14 @@ namespace Image_Processing
         // ---------------- HUFFMAN CODING COMPRESSION ----------------
         private void huffmanCompression_Click(object sender, EventArgs e)
         {
+            hideEditedImages();
+            Panel_CompressedImage.Visible = true;
+
             if (originalImage != null && pcxData != null)
             {
                 // Display the original grayscale image in the originalGrayscale PictureBox.
-                imageChannel.Image = originalImage;
+                showOriginal.Image = originalImage;
+                showCompressed.Image = originalImage;
 
                 // Perform Huffman compression on pixel data
                 byte[] compressedData = CompressHuffman(pcxData);
@@ -1949,7 +2130,8 @@ namespace Image_Processing
             else if (originalImage != null && selectedFilePath != null)
             {
                 // Display the original grayscale image in the originalGrayscale PictureBox.
-                imageChannel.Image = originalImage;
+                showOriginal.Image = originalImage;
+                showCompressed.Image = originalImage;
 
                 string imagePath = selectedFilePath;
 
@@ -2171,47 +2353,123 @@ namespace Image_Processing
             }
         }
 
-        // Final Project
+        // ------------------- FINAL PROJECT: BACKGROUND REMOVAL ----------------
         private Color selectedBackgroundColor = Color.White; // Default background color
+
+        private void SaveImagesToFolder(List<Bitmap> images)
+        {
+            try
+            {
+                using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
+                {
+                    folderBrowserDialog.Description = "Select a folder to save the images";
+                    DialogResult result = folderBrowserDialog.ShowDialog();
+
+                    if (result == DialogResult.OK)
+                    {
+                        string baseFolderPath = folderBrowserDialog.SelectedPath;
+
+                        // Create the folder if it doesn't exist
+                        Directory.CreateDirectory(baseFolderPath);
+
+                        // Save each image in the selected folder
+                        for (int i = 0; i < images.Count; i++)
+                        {
+                            string filePath = Path.Combine(baseFolderPath, $"Image_{i + 1}.png"); // You can adjust the filename as needed
+                            images[i].Save(filePath, ImageFormat.Png);
+                        }
+
+                        MessageBox.Show($"Images saved successfully to {baseFolderPath}.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving images: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
         private void BatchProcessImages_Click(object sender, EventArgs e)
         {
-            if (originalImage == null)
+            processedImages.Clear();
+
+            // Clear the existing PictureBox controls in flowLayoutPanelImages
+            flowLayoutPanelImages.Controls.Clear();
+
+            hideEditedImages();
+            Panel_BatchProcessing.Visible = true;
+
+            // Show folder browser dialog to allow the user to choose a folder
+            using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
             {
-                // No image is loaded. Display a message to the user.
-                MessageBox.Show("Please load an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                DialogResult result = folderBrowser.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowser.SelectedPath))
+                {
+                    // Load images from the selected folder
+                    LoadImagesFromFolder(folderBrowser.SelectedPath);
+                }
             }
 
-            if (foregroundImage != null)
+            SaveImagesToFolder(processedImages);
+        }
+
+        private void LoadImagesFromFolder(string folderPath)
+        {
+            try
             {
-                foregroundImage.Dispose();
+                // Get all files with supported image extensions from the folder
+                imageFiles = Directory.GetFiles(folderPath, "*.*", SearchOption.TopDirectoryOnly)
+                    .Where(s => s.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                                s.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                                s.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                                s.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ||
+                                s.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
+
+                // Enable vertical scrolling and disable horizontal scrolling for flowLayoutPanelImages
+                flowLayoutPanelImages.AutoScroll = true;
+                flowLayoutPanelImages.HorizontalScroll.Enabled = false;
+                flowLayoutPanelImages.HorizontalScroll.Visible = false;
+                flowLayoutPanelImages.HorizontalScroll.Maximum = 0;
+                flowLayoutPanelImages.AutoScrollMinSize = new Size(0, 0);
+
+                // Show color picker to choose the background color
+                if (ChooseBackgroundColor())
+                {
+                    // Display the loaded images (you may want to perform further processing here)
+                    foreach (string imagesPath in imageFiles)
+                    {
+                        // User selected a background color
+                        // Remove the background
+                        Bitmap ogImage = new Bitmap(imagesPath);
+                        foregroundImage = RemoveBackground(ogImage, selectedBackgroundColor);
+
+                        // Manually resize the image to fit within the PictureBox size
+                        Size pictureBoxSize = new Size(200, 200); // Set the size
+                        Bitmap resizedImage = new Bitmap(foregroundImage, pictureBoxSize);
+
+                        PictureBox pictureBox = new PictureBox
+                        {
+                            Image = resizedImage,
+                            SizeMode = PictureBoxSizeMode.AutoSize, // Set size mode to AutoSize
+                            Tag = imagesPath  // Store the original image path in the Tag property for reference
+                        };
+
+                        // Add PictureBox to the form
+                        flowLayoutPanelImages.Controls.Add(pictureBox);
+
+                        // Add the processed image to the list
+                        processedImages.Add(foregroundImage);
+                    }
+
+                    MessageBox.Show($"Background removed and saved.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
-
-            // Show a dialog for the user to choose the output folder and filename.
-            string outputFilePath = GetOutputFilePath();
-
-            if (outputFilePath == null)
+            catch (Exception ex)
             {
-                // User canceled the operation.
-                return;
-            }
-
-            // Show color picker to choose the background color
-            if (ChooseBackgroundColor())
-            {
-                // User selected a background color
-                // Remove the background
-                foregroundImage = RemoveBackground(originalImage, selectedBackgroundColor);
-
-                // Display the foregroundImage in the imageChannel picturebox
-                imageChannel.Image = foregroundImage;
-
-                // Save the processed image with the removed background.
-                foregroundImage.Save(outputFilePath, ImageFormat.Png);
-
-                MessageBox.Show("Image with removed background saved.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                selectedBackgroundColor = Color.Empty;
+                MessageBox.Show($"Error loading images: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -2240,47 +2498,88 @@ namespace Image_Processing
 
         private void btnChooseBackgroundColor_Click(object sender, EventArgs e)
         {
-            if (originalImage == null)
+            // Clear existing PictureBox controls in flowLayoutPanelImages
+            flowLayoutPanelImages.Controls.Clear();
+
+            if (processedImages == null)
             {
                 // No image is loaded. Display a message to the user.
-                MessageBox.Show("Please load an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please load a folder and remove the background of its images first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            else if (foregroundImage == null)
+            else
             {
-                // No image is loaded. Display a message to the user.
-                MessageBox.Show("Please remove the background of an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                // Show a dialog for the user to choose the background color.
+                Color backgroundColor = GetBackgroundColor();
+
+                if (backgroundColor == Color.Empty)
+                {
+                    // User canceled the operation or didn't choose a color.
+                    return;
+                }
+
+                AddColor(processedImages, backgroundColor);
+
+                SaveImagesToFolder(addColorImages);
             }
+        }
 
-            // Show a dialog for the user to choose the background color.
-            Color backgroundColor = GetBackgroundColor();
-
-            if (backgroundColor == Color.Empty)
+        private void AddColor(List<Bitmap> images, Color backgroundColor)
+        {
+            try
             {
-                // User canceled the operation or didn't choose a color.
-                return;
+                // Clear existing PictureBox controls in flowLayoutPanelImages
+                flowLayoutPanelImages.Controls.Clear();
+
+                // Display the images in flowLayoutPanelImages
+                foreach (Bitmap processedImage in images)
+                {
+                    try
+                    {
+                        Bitmap tempImage = processedImage;
+                        Bitmap withColor = FillBackgroundWithColor(tempImage, backgroundColor);
+
+                        // Manually resize the image to fit within the PictureBox size
+                        Size pictureBoxSize = new Size(200, 200); // Set the size
+                        Bitmap resizedImage = new Bitmap(withColor, pictureBoxSize);
+
+                        // Convert Bitmap to Image
+                        Image imageForPictureBox = (Image)resizedImage;
+
+                        // Create a new PictureBox with the converted image
+                        PictureBox pictureBox = new PictureBox
+                        {
+                            Image = imageForPictureBox,
+                            SizeMode = PictureBoxSizeMode.AutoSize, // Set size mode to AutoSize
+                            Tag = "Added Background Color"  // You can set any tag value here
+                        };
+
+                        // Add PictureBox to the form
+                        flowLayoutPanelImages.Controls.Add(pictureBox);
+
+                        addColorImages.Add(withColor);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Error displaying processed image: {ex.Message}");
+                    }
+                }
             }
-
-            // Specify the desired background fill option.
-            BackgroundFillOption backgroundFillOption = BackgroundFillOption.Color;
-
-            // Call the image processing method with the chosen background color.
-            ProcessImageWithBackground(foregroundImage, backgroundColor, backgroundFillOption);
+            catch (Exception ex)
+            {
+                throw new Exception($"Error displaying processed images: {ex.Message}");
+            }
         }
 
         private void btnChooseBackgroundImage_Click(object sender, EventArgs e)
         {
-            if (originalImage == null)
+            // Clear existing PictureBox controls in flowLayoutPanelImages
+            flowLayoutPanelImages.Controls.Clear();
+
+            if (processedImages == null)
             {
                 // No image is loaded. Display a message to the user.
-                MessageBox.Show("Please load an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            else if (foregroundImage == null)
-            {
-                // No image is loaded. Display a message to the user.
-                MessageBox.Show("Please remove the background of an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please load a folder and remove the background of its images first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -2293,28 +2592,61 @@ namespace Image_Processing
                 return;
             }
 
-            // Specify the desired background fill option.
-            BackgroundFillOption backgroundFillOption = BackgroundFillOption.Image;
-
             // Call the image processing method with the chosen background image.
-            ProcessImageWithBackground(foregroundImage, Color.White, backgroundFillOption, backgroundImageFilePath);
+            AddImage(processedImages, backgroundImageFilePath);
+
+            SaveImagesToFolder(addImageImages);
         }
 
-        private string GetOutputFilePath()
+        private void AddImage(List<Bitmap> images, string backgroundImageFilePath)
         {
-            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            try
             {
-                saveFileDialog.Title = "Choose Output File and Location";
-                saveFileDialog.Filter = "PNG Files|*.png|All Files|*.*";
-                saveFileDialog.FilterIndex = 1;
+                // Clear existing PictureBox controls in flowLayoutPanelImages
+                flowLayoutPanelImages.Controls.Clear();
 
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                // Display the images in flowLayoutPanelImages
+                foreach (Bitmap processedImage in images)
                 {
-                    return saveFileDialog.FileName;
-                }
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(backgroundImageFilePath) && File.Exists(backgroundImageFilePath))
+                        {
+                            Bitmap tempImage = processedImage;
+                            Bitmap backgroundImage = new Bitmap(backgroundImageFilePath);
+                            Bitmap withImage = FillBackgroundWithImage(tempImage, backgroundImage);
+                            backgroundImage.Dispose();
 
-                // User canceled the operation.
-                return null;
+                            // Manually resize the image to fit within the PictureBox size
+                            Size pictureBoxSize = new Size(200, 200); // Set the size
+                            Bitmap resizedImage = new Bitmap(withImage, pictureBoxSize);
+
+                            // Convert Bitmap to Image
+                            Image imageForPictureBox = (Image)resizedImage;
+
+                            // Create a new PictureBox with the converted image
+                            PictureBox pictureBox = new PictureBox
+                            {
+                                Image = imageForPictureBox,
+                                SizeMode = PictureBoxSizeMode.AutoSize, // Set size mode to AutoSize
+                                Tag = "Added Background Color"  // You can set any tag value here
+                            };
+
+                            // Add PictureBox to the form
+                            flowLayoutPanelImages.Controls.Add(pictureBox);
+
+                            addImageImages.Add(withImage);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Error displaying processed image: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error displaying processed images: {ex.Message}");
             }
         }
 
@@ -2350,58 +2682,6 @@ namespace Image_Processing
 
                 // User canceled the operation.
                 return Color.White; // You can choose a default color here.
-            }
-        }
-
-        private void ProcessImageWithBackground(Bitmap foregroundImage, Color backgroundColor, BackgroundFillOption backgroundFillOption, string backgroundImageFilePath = null)
-        {
-            try
-            {
-                // Apply the new background fill option.
-                Bitmap resultImage;
-                switch (backgroundFillOption)
-                {
-                    case BackgroundFillOption.Color:
-                        resultImage = FillBackgroundWithColor(foregroundImage, backgroundColor);
-                        break;
-
-                    case BackgroundFillOption.Image:
-                        if (!string.IsNullOrEmpty(backgroundImageFilePath) && File.Exists(backgroundImageFilePath))
-                        {
-                            Bitmap backgroundImage = new Bitmap(backgroundImageFilePath);
-                            resultImage = FillBackgroundWithImage(foregroundImage, backgroundImage);
-                            backgroundImage.Dispose();
-                        }
-                        else
-                        {
-                            // Handle the case where the background image file is not found.
-                            resultImage = foregroundImage; // Use original foreground image.
-                        }
-                        break;
-
-                    default:
-                        // Handle unknown options.
-                        resultImage = foregroundImage; // Use original foreground image.
-                        break;
-                }
-
-                // Display the resultImage in the imageChannel PictureBox.
-                imageChannel.Image = resultImage;
-
-                // Save the result image to a new file or overwrite the original file.
-                string outputFilePath = GetOutputFilePath();
-
-                if (outputFilePath != null)
-                {
-                    resultImage.Save(outputFilePath, ImageFormat.Png);
-                    MessageBox.Show("Image processing complete. Result saved.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-
-                resultImage.Dispose();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error during image processing: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -2505,7 +2785,12 @@ namespace Image_Processing
 
         private void rleFeature_MouseHover(object sender, EventArgs e)
         {
-            toolTip1.SetToolTip(rleFeature, "Run-Length Coding");
+            toolTip1.SetToolTip(rleFeature, "Run-Length Encoding");
+        }
+
+        private void huffman_MouseHover(object sender, EventArgs e)
+        {
+            toolTip1.SetToolTip(Button_Huffman, "Huffman Coding");
         }
 
         private void rawImage_Click(object sender, EventArgs e)
@@ -2520,7 +2805,15 @@ namespace Image_Processing
                 editedImage = null;
             }
 
+            PBox_Image2.Image = null;
+            PBox_Image3.Image = null;
+            PBox_Image4.Image = null;
+            Panel_Laplacian.Visible = false;
             imageChannel.Image = originalImage;
+
+            Label_Spatial1.Text = null;
+            Label_Spatial2.Text = null;
+            Label_Spatial3.Text = null;
         }
 
         // -------------------------- CLOSING IMAGE ----------------------------
@@ -2528,9 +2821,9 @@ namespace Image_Processing
         {
 
             // Display a message box asking the user if they want to close or save the image
-            DialogResult result = MessageBox.Show("Do you want to close the image without saving changes?", "Close Image", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            DialogResult result = MessageBox.Show("Save changes before closing?", "Close Image", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
 
-            if (result == DialogResult.Yes) // Close without saving
+            if (result == DialogResult.No) // Close without saving
             {
 
                 if (originalImage == null)
@@ -2552,12 +2845,15 @@ namespace Image_Processing
                 editedImage = null;
                 imageChannel.Image = null;
                 ViewImage.Image = null;
-
-                imageNameLabel.Text = null;
+                PBox_Image1.Image = null;
+                PBox_Image2.Image = null;
+                PBox_Image3.Image = null;
+                PBox_Image4.Image = null;
 
                 hideCloseButton();
+                hideEditedImages();
             }
-            else if (result == DialogResult.No) // Save and close
+            else if (result == DialogResult.Yes) // Save and close
             {
                 if (originalImage == null)
                 {
@@ -2572,7 +2868,7 @@ namespace Image_Processing
                 // Save the edited image
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Filter = "JPEG Image|*.jpg|PNG Image|*.png|BMP Image|*.bmp|All Files|*.*";
-                saveFileDialog.Title = "Save Edited Image";
+                saveFileDialog.Title = "Save Image";
                 saveFileDialog.ShowDialog();
 
                 if (!string.IsNullOrEmpty(saveFileDialog.FileName))
@@ -2588,10 +2884,14 @@ namespace Image_Processing
                     editedImage = null;
                     imageChannel.Image = null;
                     ViewImage.Image = null;
-
-                    imageNameLabel.Text = null;
+                    PBox_Image1.Image = null;
+                    PBox_Image2.Image = null;
+                    PBox_Image3.Image = null;
+                    PBox_Image4.Image = null;
+                    paletteDisplay.Visible = false;
 
                     hideCloseButton();
+                    hideEditedImages();
                 }
             }
             else if (result == DialogResult.Cancel) // Do nothing and keep editing
@@ -2600,20 +2900,17 @@ namespace Image_Processing
             }
         }
 
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void SpatialFiltering_Click(object sender, EventArgs e)
         {
             hideFeaturesPanels();
+            hideEditedImages();
             Panel_Spatial.Visible = true;
+            Panel_DisplaySpatial.Visible = true;
+
+            Label_Spatial1.Text = null;
+            Label_Spatial2.Text = null;
+            Label_Spatial3.Text = null;
+            Panel_Laplacian.Visible = false;
 
             Label_Feature.Text = "Spatial Filtering";
 
@@ -2636,11 +2933,35 @@ namespace Image_Processing
                 Button_BasicEnhancement.Image = Properties.Resources.basic;
                 Button_RestoreDegrade.Image = Properties.Resources.restore;
             }
+
+            // Check if the originalImage has been loaded
+            if (originalImage != null)
+            {
+                clearSpatialPictureBox();
+
+                Bitmap sourceImage = originalImage; // Create a new Bitmap object to hold the source image
+                originalGrayImage = new Bitmap(sourceImage.Width, sourceImage.Height); // Create a new Bitmap object to hold the grayscale version of the source image
+
+                // Loop through each pixel in the source image
+                for (int x = 0; x < sourceImage.Width; x++)
+                {
+                    for (int y = 0; y < sourceImage.Height; y++)
+                    {
+                        Color pixel = sourceImage.GetPixel(x, y); // Get the color of the current pixel
+                        int grayValue = (int)(0.3 * pixel.R + 0.59 * pixel.G + 0.11 * pixel.B); // Calculate the grayscale value for the pixel using the specified weights
+                        originalGrayImage.SetPixel(x, y, Color.FromArgb(grayValue, grayValue, grayValue)); // Set the corresponding pixel in the grayscale image to the calculated gray value
+                    }
+                }
+
+                displayGrayscaleImage(originalGrayImage); // Display the grayscale image using the displayGrayscaleImage methodm
+            }
         }
 
         private void basicEnhancement_Click(object sender, EventArgs e)
         {
             hideFeaturesPanels();
+            hideEditedImages();
+            Panel_EditedImage.Visible = true;
             Panel_Enhancement.Visible = true;
 
             Label_Feature.Text = "Image Enhancement";
@@ -2669,6 +2990,8 @@ namespace Image_Processing
         private void Button_RestoreDegrade_Click(object sender, EventArgs e)
         {
             hideFeaturesPanels();
+            hideEditedImages();
+            Panel_EditedImage.Visible = true;
             Panel_RestoreDegrade.Visible = true;
 
             Label_Feature.Text = "Image Restoration and Degradation";
@@ -2694,6 +3017,8 @@ namespace Image_Processing
             }
         }
 
+        // ------------------ SPATIAL FILTERING ------------------
+
         // Enum to represent background fill options.
         private enum BackgroundFillOption
         {
@@ -2702,38 +3027,44 @@ namespace Image_Processing
             Image
         }
 
-        private Bitmap originalGrayImage; // Field to store the original grayscale image.
-
         // The displayGrayscaleImage method is responsible for displaying a grayscale image in the form.
         public void displayGrayscaleImage(Bitmap grayscaleImage)
         {
+            if (originalGrayImage == null)
+            {
+                return;
+            }
+
             // Dispose of any previously displayed images and clear associated labels to prevent resource leaks.
-            //image1.Image = null;
-            //image2.Image = null;
-            //image3.Image = null;
-            //image1Label.Text = null;
-            //image2Label.Text = null;
-            //image3Label.Text = null;
-            //laplacianKernel.Text = null;
+            PBox_Image1.Image = null;
+            PBox_Image2.Image = null;
+            PBox_Image3.Image = null;
+            PBox_Image4.Image = null;
 
             // Display the provided grayscale image in the originalGrayscale PictureBox.
-            // originalGrayscale.Image = originalGrayImage;
+            PBox_Image1.Image = originalGrayImage;
         }
 
         // The averagingFilter_Click event handler is triggered when the "Averaging Filter" button is clicked.
         private void averagingFilter_Click(object sender, EventArgs e)
         {
+            if (originalGrayImage == null)
+            {
+                return;
+            }
             // Dispose of the previous images and clear associated labels to prevent resource leaks.
-            //image1.Image = null;
-            //image2.Image = null;
-            //image3.Image = null;
-            //image1Label.Text = null;
-            //image2Label.Text = null;
-            //image3Label.Text = null;
-            //laplacianKernel.Text = null;
+            PBox_Image1.Image = null;
+            PBox_Image2.Image = null;
+            PBox_Image3.Image = null;
+            PBox_Image4.Image = null;
+
+            Label_Spatial1.Text = null;
+            Label_Spatial2.Text = null;
+            Label_Spatial3.Text = null;
+            Panel_Laplacian.Visible = false;
 
             // Set the label to indicate the applied filter.
-            //image1Label.Text = "Average Filter";
+            Label_Spatial1.Text = "Average Filter";
 
             // Define the filter size (you can adjust this value as needed).
             int filterSize = 3;
@@ -2742,45 +3073,173 @@ namespace Image_Processing
             Bitmap filteredImage = ApplyAveragingFilter(originalGrayImage, filterSize);
 
             // Display the filtered image in the originalGrayscale PictureBox.
-            //image1.Image = filteredImage;
+            displayGrayscaleImage(originalGrayImage);
+            PBox_Image2.Image = filteredImage;
+        }
+        // The medianFilter_Click event handler is triggered when the "Median Filter" button is clicked.
+        private void median_Click(object sender, EventArgs e)
+        {
+            if (originalGrayImage == null)
+            {
+                return;
+            }
+
+            // Dispose of the previous images and clear associated labels to prevent resource leaks.
+            PBox_Image1.Image = null;
+            PBox_Image2.Image = null;
+            PBox_Image3.Image = null;
+            PBox_Image4.Image = null;
+
+            Label_Spatial1.Text = null;
+            Label_Spatial2.Text = null;
+            Label_Spatial3.Text = null;
+            Panel_Laplacian.Visible = false;
+
+            // Set the label to indicate the applied filter.
+            Label_Spatial1.Text = "Median Filter";
+
+            // Define the filter size (you can adjust this value as needed).
+            int filterSize = 3;
+
+            // Apply the median filter to the original grayscale image.
+            Bitmap filteredImage = ApplyMedian(originalGrayImage, filterSize);
+
+            // Display the filtered image in the originalGrayscale PictureBox.
+            displayGrayscaleImage(originalGrayImage);
+            PBox_Image2.Image = filteredImage;
+        }
+
+        // Apply the median filter to a specific pixel in the image
+        private Bitmap ApplyMedian(Bitmap image, int filterSize)
+        {
+             // Create a new Bitmap to store the filtered image with the same dimensions as the input image.
+            Bitmap filteredImage = new Bitmap(image.Width, image.Height);
+
+            // Iterate through each pixel in the input image.
+            for (int x = 0; x < image.Width; x++)
+            {
+                for (int y = 0; y < image.Height; y++)
+                {
+                    // Calculate the median color for the current pixel using the specified filter size.
+                    Color medianColor = CalculateMedianColor(image, x, y, filterSize);
+
+                    // Set the corresponding pixel in the filtered image to the calculated median color.
+                    filteredImage.SetPixel(x, y, medianColor);
+                }
+            }
+
+             // Return the filtered image as a new Bitmap.
+             return filteredImage;
+        }
+
+        // Calculate the median color for a specific pixel in the image
+        private Color CalculateMedianColor(Bitmap image, int x, int y, int filterSize)
+        {
+            // Calculate the radius of the filter (half of the filter size).
+            int filterRadius = filterSize / 2;
+
+            // Initialize lists to store color channel values from the neighborhood.
+            List<byte> redValues = new List<byte>();
+            List<byte> greenValues = new List<byte>();
+            List<byte> blueValues = new List<byte>();
+
+            // Iterate through the pixels within the neighborhood.
+            for (int i = -filterRadius; i <= filterRadius; i++)
+            {
+                for (int j = -filterRadius; j <= filterRadius; j++)
+                {
+                    int pixelX = x + i;
+                    int pixelY = y + j;
+
+                    // Check if the pixel is within the bounds of the image.
+                    if (pixelX >= 0 && pixelX < image.Width && pixelY >= 0 && pixelY < image.Height)
+                    {
+                        // Get the color of the current pixel in the neighborhood.
+                        Color pixelColor = image.GetPixel(pixelX, pixelY);
+
+                        // Store the color channel values (R, G, and B) from the current pixel.
+                        redValues.Add(pixelColor.R);
+                        greenValues.Add(pixelColor.G);
+                        blueValues.Add(pixelColor.B);
+                    }
+                }
+            }
+
+            // Calculate the median value for each color channel.
+            byte medianR = GetMedianValue(redValues);
+            byte medianG = GetMedianValue(greenValues);
+            byte medianB = GetMedianValue(blueValues);
+
+            // Return the computed median color as a Color object.
+            return Color.FromArgb(medianR, medianG, medianB);
+        }
+
+        // GetMedianValue method calculates the median value from a list of byte values.
+        // It sorts the values and returns the value at the middle position.
+        // Note: The list is assumed to be pre-sorted before calling this method.
+        private byte GetMedianValue(List<byte> values)
+        {
+            // Sort the list of values in ascending order.
+            values.Sort();
+
+            // Calculate the index of the middle value in the sorted list.
+            int middle = values.Count / 2;
+
+            // Return the value at the middle position, which is the median value.
+            return values[middle];
         }
 
         // The highpassFilter_Click event handler is triggered when the "Highpass Filter" button is clicked.
         private void highpassFilter_Click(object sender, EventArgs e)
         {
-            // Dispose of the previous image (if any) to prevent resource leaks
-            //image1.Image = null;
-            //image2.Image = null;
-            //image3.Image = null;
-            //image1Label.Text = null;
-            //image2Label.Text = null;
-            //image3Label.Text = null;
-            //laplacianKernel.Text = null;
+            if (originalGrayImage == null)
+            {
+                return;
+            }
 
-            //image1Label.Text = "Highpass Filter";
-            //laplacianKernel.Text = "Filter used in\r\nLaplacian operator\r\n[ -1, -1, -1 ]\r\n[ -1,  8, -1 ]\r\n[ -1, -1, -1 ]";
+            // Dispose of the previous image (if any) to prevent resource leaks
+            PBox_Image1.Image = null;
+            PBox_Image2.Image = null;
+            PBox_Image3.Image = null;
+            PBox_Image4.Image = null;
+
+            Label_Spatial1.Text = null;
+            Label_Spatial2.Text = null;
+            Label_Spatial3.Text = null;
+            Panel_Laplacian.Visible = true;
+
+            Label_Spatial1.Text = "Highpass Filter";
+            Panel_Laplacian.Visible = true;
+
             // Apply the Laplacian filter to the originalGrayImage
             Bitmap laplacianImage = ApplyLaplacianFilter(originalGrayImage);
 
             // Display the Laplacian image in the originalGrayscale PictureBox
-            //image1.Image = laplacianImage;
+            displayGrayscaleImage(originalGrayImage);
+            PBox_Image2.Image = laplacianImage;
         }
 
         // The unsharpMasking_Click event handler is triggered when the "Unsharp Masking" button is clicked.
         private void unsharpMasking_Click(object sender, EventArgs e)
         {
+            if (originalGrayImage == null)
+            {
+                return;
+            }
             // Dispose of the previous image (if any) to prevent resource leaks
-            //image1.Image = null;
-            //image2.Image = null;
-            //image3.Image = null;
-            //image1Label.Text = null;
-            //image2Label.Text = null;
-            //image3Label.Text = null;
-            //laplacianKernel.Text = null;
+            PBox_Image1.Image = null;
+            PBox_Image2.Image = null;
+            PBox_Image3.Image = null;
+            PBox_Image4.Image = null;
 
-            //image1Label.Text = "Blurred using Averaging Filter";
-            //image2Label.Text = "Subtracted";
-            //image3Label.Text = "Unsharp Masking";
+            Label_Spatial1.Text = null;
+            Label_Spatial2.Text = null;
+            Label_Spatial3.Text = null;
+            Panel_Laplacian.Visible = false;
+
+            Label_Spatial1.Text = "Blurred using Averaging Filter";
+            Label_Spatial2.Text = "Subtracted";
+            Label_Spatial3.Text = "Unsharp Masking"; ;
 
             // Define the filter size for the averaging filter
             int filterSize = 3; // You can adjust this value
@@ -2826,29 +3285,36 @@ namespace Image_Processing
             }
 
             // Display the sharpened image in the originalGrayscale PictureBox
-            //image1.Image = blurredImage;
-            //image2.Image = differenceImage;
-            //image3.Image = sharpenedImage;
+            displayGrayscaleImage(originalGrayImage);
+            PBox_Image2.Image = blurredImage;
+            PBox_Image3.Image = differenceImage;
+            PBox_Image4.Image = sharpenedImage;
         }
 
         // The highboostFiltering_Click event handler is triggered when the "Highboost Filtering" button is clicked.
         private void highboostFiltering_Click(object sender, EventArgs e)
         {
+            if (originalGrayImage == null)
+            {
+                return;
+            }
             // Dispose of the previous image (if any) to prevent resource leaks
-            //image1.Image = null;
-            //image2.Image = null;
-            //image3.Image = null;
-            //image1Label.Text = null;
-            //image2Label.Text = null;
-            //image3Label.Text = null;
-            //laplacianKernel.Text = null;
+            PBox_Image1.Image = null;
+            PBox_Image2.Image = null;
+            PBox_Image3.Image = null;
+            PBox_Image4.Image = null;
+
+            Label_Spatial1.Text = null;
+            Label_Spatial2.Text = null;
+            Label_Spatial3.Text = null;
+            Panel_Laplacian.Visible = false;
 
             // Define the filter size for the low-pass filter (averaging filter)
             int filterSize = 3; // You can adjust this value
 
             // Define the amplification factor (A)
             double A = 3.2; // You can adjust this value
-            // image1Label.Text = "Highboost Filtering (Amplication Parameter: " + A + ")";
+            Label_Spatial1.Text = "Highboost Filtering (Amplication Parameter: " + A + ")";
 
             // Apply the averaging filter to the originalGrayImage to create a low-pass version
             Bitmap lowpassImage = ApplyAveragingFilter(originalGrayImage, filterSize);
@@ -2892,33 +3358,41 @@ namespace Image_Processing
             }
 
             // Display the high-boost image in the originalGrayscale PictureBox
-            // image1.Image = highboostImage;
+            displayGrayscaleImage(originalGrayImage);
+            PBox_Image2.Image = highboostImage;
         }
 
         // The gradient_Click event handler is triggered
         private void gradient_Click(object sender, EventArgs e)
         {
+            if (originalGrayImage == null)
+            {
+                return;
+            }
             // Dispose of the previous image (if any) to prevent resource leaks
-            //image1.Image = null;
-            //image2.Image = null;
-            //image3.Image = null;
-            //image1Label.Text = null;
-            //image2Label.Text = null;
-            //image3Label.Text = null;
-            //laplacianKernel.Text = null;
+            PBox_Image1.Image = null;
+            PBox_Image2.Image = null;
+            PBox_Image3.Image = null;
+            PBox_Image4.Image = null;
 
-            //image1Label.Text = "Sobel Operator (XY)";
-            //image2Label.Text = "Sobel Operator (X)";
-            //image3Label.Text = "Sobel Operator (Y)";
+            Label_Spatial1.Text = null;
+            Label_Spatial2.Text = null;
+            Label_Spatial3.Text = null;
+            Panel_Laplacian.Visible = false;
+
+            Label_Spatial1.Text = "Sobel Operator (XY)";
+            Label_Spatial2.Text = "Sobel Operator (X)";
+            Label_Spatial3.Text = "Sobel Operator (Y)";
 
             // Apply the Sobel operator to the originalGrayImage to calculate the gradient
             Bitmap gradientXImage, gradientYImage, gradientMagnitudeImage;
-            //ApplySobelOperator(originalGrayImage, out gradientXImage, out gradientYImage, out gradientMagnitudeImage);
+            ApplySobelOperator(originalGrayImage, out gradientXImage, out gradientYImage, out gradientMagnitudeImage);
 
             // Display the gradient images in respective PictureBox controls
-            //image2.Image = gradientXImage;
-            //image3.Image = gradientYImage;
-            //image1.Image = gradientMagnitudeImage;
+            displayGrayscaleImage(originalGrayImage);
+            PBox_Image2.Image = gradientMagnitudeImage;
+            PBox_Image3.Image = gradientXImage;
+            PBox_Image4.Image = gradientMagnitudeImage;
         }
 
         // Apply the averaging filter to a specific pixel in the image
