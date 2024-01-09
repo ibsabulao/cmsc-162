@@ -1546,7 +1546,7 @@ namespace Image_Processing
             // button2
             // 
             button2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            button2.Font = new Font("Microsoft Sans Serif", 7.20000029F, FontStyle.Regular, GraphicsUnit.Point);
+            button2.Font = new Font("Microsoft Sans Serif", 7.8F, FontStyle.Regular, GraphicsUnit.Point);
             button2.ForeColor = SystemColors.ActiveCaptionText;
             button2.Location = new Point(17, 7);
             button2.Margin = new Padding(1);
@@ -1638,9 +1638,9 @@ namespace Image_Processing
             // 
             // Panel_imageEnhancement
             // 
-            Panel_imageEnhancement.Controls.Add(Panel_Enhancement);
             Panel_imageEnhancement.Controls.Add(Panel_Spatial);
             Panel_imageEnhancement.Controls.Add(Panel_RestoreDegrade);
+            Panel_imageEnhancement.Controls.Add(Panel_Enhancement);
             Panel_imageEnhancement.Location = new Point(0, 65);
             Panel_imageEnhancement.Margin = new Padding(0);
             Panel_imageEnhancement.Name = "Panel_imageEnhancement";
