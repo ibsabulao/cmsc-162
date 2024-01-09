@@ -265,7 +265,7 @@ namespace Image_Processing
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Padding = new Padding(7, 3, 0, 3);
             menuStrip1.RenderMode = ToolStripRenderMode.Professional;
-            menuStrip1.Size = new Size(1424, 25);
+            menuStrip1.Size = new Size(1424, 28);
             menuStrip1.TabIndex = 0;
             menuStrip1.Text = "menuStrip1";
             // 
@@ -274,14 +274,14 @@ namespace Image_Processing
             menu1ToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { openImageFileToolStripMenuItem, openPCXFileToolStripMenuItem });
             menu1ToolStripMenuItem.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point);
             menu1ToolStripMenuItem.Name = "menu1ToolStripMenuItem";
-            menu1ToolStripMenuItem.Size = new Size(39, 19);
+            menu1ToolStripMenuItem.Size = new Size(45, 22);
             menu1ToolStripMenuItem.Text = "File";
             // 
             // openImageFileToolStripMenuItem
             // 
             openImageFileToolStripMenuItem.Image = Properties.Resources.open;
             openImageFileToolStripMenuItem.Name = "openImageFileToolStripMenuItem";
-            openImageFileToolStripMenuItem.Size = new Size(165, 22);
+            openImageFileToolStripMenuItem.Size = new Size(197, 26);
             openImageFileToolStripMenuItem.Text = "Open Image File";
             openImageFileToolStripMenuItem.Click += ViewImage_Click;
             // 
@@ -289,7 +289,7 @@ namespace Image_Processing
             // 
             openPCXFileToolStripMenuItem.Image = Properties.Resources.openpcx;
             openPCXFileToolStripMenuItem.Name = "openPCXFileToolStripMenuItem";
-            openPCXFileToolStripMenuItem.Size = new Size(165, 22);
+            openPCXFileToolStripMenuItem.Size = new Size(197, 26);
             openPCXFileToolStripMenuItem.Text = "Open PCX File";
             openPCXFileToolStripMenuItem.Click += ViewPCX_Click;
             // 
@@ -315,7 +315,7 @@ namespace Image_Processing
             Label_Degrade.Location = new Point(3, 3);
             Label_Degrade.Margin = new Padding(2, 2, 2, 0);
             Label_Degrade.Name = "Label_Degrade";
-            Label_Degrade.Size = new Size(114, 13);
+            Label_Degrade.Size = new Size(145, 17);
             Label_Degrade.TabIndex = 19;
             Label_Degrade.Text = "Image Degradation";
             // 
@@ -327,7 +327,7 @@ namespace Image_Processing
             Label_Salt.Location = new Point(9, 9);
             Label_Salt.Margin = new Padding(2, 0, 2, 0);
             Label_Salt.Name = "Label_Salt";
-            Label_Salt.Size = new Size(100, 12);
+            Label_Salt.Size = new Size(124, 15);
             Label_Salt.TabIndex = 19;
             Label_Salt.Text = "Salt Probability [0, 0.5]";
             // 
@@ -337,7 +337,7 @@ namespace Image_Processing
             pepperProb.Location = new Point(11, 68);
             pepperProb.Margin = new Padding(4);
             pepperProb.Name = "pepperProb";
-            pepperProb.Size = new Size(165, 21);
+            pepperProb.Size = new Size(165, 24);
             pepperProb.TabIndex = 23;
             pepperProb.KeyPress += textBox1_KeyPress;
             // 
@@ -347,7 +347,7 @@ namespace Image_Processing
             saltProb.Location = new Point(11, 25);
             saltProb.Margin = new Padding(4);
             saltProb.Name = "saltProb";
-            saltProb.Size = new Size(165, 21);
+            saltProb.Size = new Size(165, 24);
             saltProb.TabIndex = 21;
             saltProb.KeyPress += textBox1_KeyPress;
             // 
@@ -359,7 +359,7 @@ namespace Image_Processing
             Label_Pepper.Location = new Point(9, 53);
             Label_Pepper.Margin = new Padding(2, 0, 2, 0);
             Label_Pepper.Name = "Label_Pepper";
-            Label_Pepper.Size = new Size(116, 12);
+            Label_Pepper.Size = new Size(142, 15);
             Label_Pepper.TabIndex = 22;
             Label_Pepper.Text = "Pepper Probability [0, 0.5]";
             // 
@@ -370,7 +370,7 @@ namespace Image_Processing
             button6.Location = new Point(155, 11);
             button6.Margin = new Padding(4);
             button6.Name = "button6";
-            button6.Size = new Size(115, 37);
+            button6.Size = new Size(130, 37);
             button6.TabIndex = 25;
             button6.Text = "Rayleigh Noise";
             button6.UseVisualStyleBackColor = false;
@@ -380,10 +380,10 @@ namespace Image_Processing
             // 
             button5.BackColor = SystemColors.ControlLightLight;
             button5.ForeColor = SystemColors.ActiveCaptionText;
-            button5.Location = new Point(32, 11);
+            button5.Location = new Point(19, 11);
             button5.Margin = new Padding(4);
             button5.Name = "button5";
-            button5.Size = new Size(115, 37);
+            button5.Size = new Size(128, 37);
             button5.TabIndex = 24;
             button5.Text = "Gaussian Noise";
             button5.UseVisualStyleBackColor = false;
@@ -393,10 +393,10 @@ namespace Image_Processing
             // 
             midpointFilter.BackColor = SystemColors.ControlLightLight;
             midpointFilter.ForeColor = SystemColors.ActiveCaptionText;
-            midpointFilter.Location = new Point(159, 59);
+            midpointFilter.Location = new Point(159, 63);
             midpointFilter.Margin = new Padding(4);
             midpointFilter.Name = "midpointFilter";
-            midpointFilter.Size = new Size(101, 29);
+            midpointFilter.Size = new Size(119, 29);
             midpointFilter.TabIndex = 31;
             midpointFilter.Text = "Midpoint Filter";
             midpointFilter.UseVisualStyleBackColor = false;
@@ -406,10 +406,10 @@ namespace Image_Processing
             // 
             maxFilter.BackColor = SystemColors.ControlLightLight;
             maxFilter.ForeColor = SystemColors.ActiveCaptionText;
-            maxFilter.Location = new Point(159, 26);
+            maxFilter.Location = new Point(159, 30);
             maxFilter.Margin = new Padding(4);
             maxFilter.Name = "maxFilter";
-            maxFilter.Size = new Size(101, 29);
+            maxFilter.Size = new Size(119, 29);
             maxFilter.TabIndex = 30;
             maxFilter.Text = "Max Filter";
             maxFilter.UseVisualStyleBackColor = false;
@@ -419,10 +419,10 @@ namespace Image_Processing
             // 
             minFilter.BackColor = SystemColors.ControlLightLight;
             minFilter.ForeColor = SystemColors.ActiveCaptionText;
-            minFilter.Location = new Point(41, 26);
+            minFilter.Location = new Point(27, 30);
             minFilter.Margin = new Padding(4);
             minFilter.Name = "minFilter";
-            minFilter.Size = new Size(101, 29);
+            minFilter.Size = new Size(115, 29);
             minFilter.TabIndex = 29;
             minFilter.Text = "Min Filter";
             minFilter.UseVisualStyleBackColor = false;
@@ -432,10 +432,10 @@ namespace Image_Processing
             // 
             medianFilter.BackColor = SystemColors.ControlLightLight;
             medianFilter.ForeColor = SystemColors.ActiveCaptionText;
-            medianFilter.Location = new Point(41, 59);
+            medianFilter.Location = new Point(27, 63);
             medianFilter.Margin = new Padding(4);
             medianFilter.Name = "medianFilter";
-            medianFilter.Size = new Size(101, 29);
+            medianFilter.Size = new Size(115, 29);
             medianFilter.TabIndex = 28;
             medianFilter.Text = "Median Filter";
             medianFilter.UseVisualStyleBackColor = false;
@@ -447,7 +447,7 @@ namespace Image_Processing
             qValue.Location = new Point(9, 28);
             qValue.Margin = new Padding(4);
             qValue.Name = "qValue";
-            qValue.Size = new Size(146, 21);
+            qValue.Size = new Size(146, 24);
             qValue.TabIndex = 24;
             qValue.KeyPress += textBox1_KeyPress;
             // 
@@ -459,7 +459,7 @@ namespace Image_Processing
             Label_Q.Location = new Point(9, 10);
             Label_Q.Margin = new Padding(2, 0, 2, 0);
             Label_Q.Name = "Label_Q";
-            Label_Q.Size = new Size(41, 12);
+            Label_Q.Size = new Size(50, 15);
             Label_Q.TabIndex = 24;
             Label_Q.Text = "Q value:";
             // 
@@ -467,10 +467,10 @@ namespace Image_Processing
             // 
             contraHarmonicFilter.BackColor = SystemColors.ControlLightLight;
             contraHarmonicFilter.ForeColor = SystemColors.ActiveCaptionText;
-            contraHarmonicFilter.Location = new Point(179, 10);
+            contraHarmonicFilter.Location = new Point(163, 7);
             contraHarmonicFilter.Margin = new Padding(4);
             contraHarmonicFilter.Name = "contraHarmonicFilter";
-            contraHarmonicFilter.Size = new Size(110, 39);
+            contraHarmonicFilter.Size = new Size(130, 50);
             contraHarmonicFilter.TabIndex = 27;
             contraHarmonicFilter.Text = "Contraharmonic Filter";
             contraHarmonicFilter.UseVisualStyleBackColor = false;
@@ -480,10 +480,10 @@ namespace Image_Processing
             // 
             geometricFilter.BackColor = SystemColors.ControlLightLight;
             geometricFilter.ForeColor = SystemColors.ActiveCaptionText;
-            geometricFilter.Location = new Point(96, 8);
+            geometricFilter.Location = new Point(86, 9);
             geometricFilter.Margin = new Padding(4);
             geometricFilter.Name = "geometricFilter";
-            geometricFilter.Size = new Size(116, 36);
+            geometricFilter.Size = new Size(138, 36);
             geometricFilter.TabIndex = 26;
             geometricFilter.Text = "Geometric Filter";
             geometricFilter.UseVisualStyleBackColor = false;
@@ -899,10 +899,10 @@ namespace Image_Processing
             Label_OrderStat.AutoSize = true;
             Label_OrderStat.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Italic, GraphicsUnit.Point);
             Label_OrderStat.ForeColor = SystemColors.ControlText;
-            Label_OrderStat.Location = new Point(93, 8);
+            Label_OrderStat.Location = new Point(88, 6);
             Label_OrderStat.Margin = new Padding(2, 0, 2, 0);
             Label_OrderStat.Name = "Label_OrderStat";
-            Label_OrderStat.Size = new Size(103, 13);
+            Label_OrderStat.Size = new Size(141, 17);
             Label_OrderStat.TabIndex = 26;
             Label_OrderStat.Text = "Order-Statistics Filter";
             // 
@@ -924,7 +924,7 @@ namespace Image_Processing
             Label_Restoration.Location = new Point(3, 3);
             Label_Restoration.Margin = new Padding(2, 2, 2, 0);
             Label_Restoration.Name = "Label_Restoration";
-            Label_Restoration.Size = new Size(110, 13);
+            Label_Restoration.Size = new Size(140, 17);
             Label_Restoration.TabIndex = 19;
             Label_Restoration.Text = "Image Restoration";
             // 
@@ -1075,7 +1075,7 @@ namespace Image_Processing
             Label_Gamma.Location = new Point(3, 3);
             Label_Gamma.Margin = new Padding(2, 2, 2, 0);
             Label_Gamma.Name = "Label_Gamma";
-            Label_Gamma.Size = new Size(136, 13);
+            Label_Gamma.Size = new Size(177, 17);
             Label_Gamma.TabIndex = 19;
             Label_Gamma.Text = "Gamma Transformation";
             // 
@@ -1099,7 +1099,7 @@ namespace Image_Processing
             Label_GammaValues.Location = new Point(10, 9);
             Label_GammaValues.Margin = new Padding(2, 0, 2, 0);
             Label_GammaValues.Name = "Label_GammaValues";
-            Label_GammaValues.Size = new Size(111, 12);
+            Label_GammaValues.Size = new Size(133, 15);
             Label_GammaValues.TabIndex = 19;
             Label_GammaValues.Text = "Input Gamma (𝛾) values";
             // 
@@ -1124,7 +1124,7 @@ namespace Image_Processing
             gamma_textbox.Location = new Point(11, 28);
             gamma_textbox.Margin = new Padding(4);
             gamma_textbox.Name = "gamma_textbox";
-            gamma_textbox.Size = new Size(170, 21);
+            gamma_textbox.Size = new Size(170, 24);
             gamma_textbox.TabIndex = 20;
             // 
             // Table_BW
@@ -1153,7 +1153,7 @@ namespace Image_Processing
             Label_BW.Location = new Point(3, 3);
             Label_BW.Margin = new Padding(2, 2, 2, 0);
             Label_BW.Name = "Label_BW";
-            Label_BW.Size = new Size(166, 13);
+            Label_BW.Size = new Size(208, 17);
             Label_BW.TabIndex = 19;
             Label_BW.Text = "Black/White Transformation";
             // 
@@ -1176,7 +1176,7 @@ namespace Image_Processing
             Label_BWAdjust.Location = new Point(7, 7);
             Label_BWAdjust.Margin = new Padding(2, 0, 2, 0);
             Label_BWAdjust.Name = "Label_BWAdjust";
-            Label_BWAdjust.Size = new Size(134, 12);
+            Label_BWAdjust.Size = new Size(163, 15);
             Label_BWAdjust.TabIndex = 19;
             Label_BWAdjust.Text = "Adjust B/W Threshold [0, 255]";
             // 
@@ -1187,7 +1187,7 @@ namespace Image_Processing
             bw_trackbar.Margin = new Padding(2, 3, 2, 3);
             bw_trackbar.Maximum = 255;
             bw_trackbar.Name = "bw_trackbar";
-            bw_trackbar.Size = new Size(300, 45);
+            bw_trackbar.Size = new Size(300, 56);
             bw_trackbar.TabIndex = 18;
             bw_trackbar.TickFrequency = 15;
             bw_trackbar.TickStyle = TickStyle.TopLeft;
@@ -1219,7 +1219,7 @@ namespace Image_Processing
             Label_Grayscale.Location = new Point(3, 3);
             Label_Grayscale.Margin = new Padding(2, 2, 2, 0);
             Label_Grayscale.Name = "Label_Grayscale";
-            Label_Grayscale.Size = new Size(231, 13);
+            Label_Grayscale.Size = new Size(297, 17);
             Label_Grayscale.TabIndex = 19;
             Label_Grayscale.Text = "Grayscale and Negative Transformation";
             // 
@@ -1298,7 +1298,7 @@ namespace Image_Processing
             Label_RGBChannel.Location = new Point(3, 3);
             Label_RGBChannel.Margin = new Padding(2, 2, 2, 0);
             Label_RGBChannel.Name = "Label_RGBChannel";
-            Label_RGBChannel.Size = new Size(89, 13);
+            Label_RGBChannel.Size = new Size(113, 17);
             Label_RGBChannel.TabIndex = 19;
             Label_RGBChannel.Text = "RGB Channels";
             // 
@@ -1379,9 +1379,9 @@ namespace Image_Processing
             Panel_Laplacian.Controls.Add(Label_Laplacian2);
             Panel_Laplacian.Controls.Add(Label_Laplacian1);
             Panel_Laplacian.Controls.Add(Label_Laplacian);
-            Panel_Laplacian.Location = new Point(61, 283);
+            Panel_Laplacian.Location = new Point(42, 302);
             Panel_Laplacian.Name = "Panel_Laplacian";
-            Panel_Laplacian.Size = new Size(217, 116);
+            Panel_Laplacian.Size = new Size(256, 131);
             Panel_Laplacian.TabIndex = 45;
             // 
             // Label_Laplacian3
@@ -1390,10 +1390,10 @@ namespace Image_Processing
             Label_Laplacian3.AutoSize = true;
             Label_Laplacian3.Font = new Font("Microsoft Sans Serif", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Label_Laplacian3.ForeColor = SystemColors.ControlText;
-            Label_Laplacian3.Location = new Point(71, 81);
+            Label_Laplacian3.Location = new Point(81, 81);
             Label_Laplacian3.Margin = new Padding(2, 2, 2, 0);
             Label_Laplacian3.Name = "Label_Laplacian3";
-            Label_Laplacian3.Size = new Size(66, 16);
+            Label_Laplacian3.Size = new Size(92, 20);
             Label_Laplacian3.TabIndex = 23;
             Label_Laplacian3.Text = "[ -1, -1, -1 ]";
             // 
@@ -1403,10 +1403,10 @@ namespace Image_Processing
             Label_Laplacian2.AutoSize = true;
             Label_Laplacian2.Font = new Font("Microsoft Sans Serif", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Label_Laplacian2.ForeColor = SystemColors.ControlText;
-            Label_Laplacian2.Location = new Point(72, 63);
+            Label_Laplacian2.Location = new Point(82, 63);
             Label_Laplacian2.Margin = new Padding(2, 2, 2, 0);
             Label_Laplacian2.Name = "Label_Laplacian2";
-            Label_Laplacian2.Size = new Size(65, 16);
+            Label_Laplacian2.Size = new Size(91, 20);
             Label_Laplacian2.TabIndex = 22;
             Label_Laplacian2.Text = "[ -1,  8, -1 ]";
             // 
@@ -1416,10 +1416,10 @@ namespace Image_Processing
             Label_Laplacian1.AutoSize = true;
             Label_Laplacian1.Font = new Font("Microsoft Sans Serif", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Label_Laplacian1.ForeColor = SystemColors.ControlText;
-            Label_Laplacian1.Location = new Point(71, 45);
+            Label_Laplacian1.Location = new Point(81, 45);
             Label_Laplacian1.Margin = new Padding(2, 2, 2, 0);
             Label_Laplacian1.Name = "Label_Laplacian1";
-            Label_Laplacian1.Size = new Size(66, 16);
+            Label_Laplacian1.Size = new Size(92, 20);
             Label_Laplacian1.TabIndex = 21;
             Label_Laplacian1.Text = "[ -1, -1, -1 ]";
             // 
@@ -1427,12 +1427,12 @@ namespace Image_Processing
             // 
             Label_Laplacian.Anchor = AnchorStyles.Top;
             Label_Laplacian.AutoSize = true;
-            Label_Laplacian.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point);
+            Label_Laplacian.Font = new Font("Microsoft Sans Serif", 7.20000029F, FontStyle.Bold, GraphicsUnit.Point);
             Label_Laplacian.ForeColor = SystemColors.ControlText;
-            Label_Laplacian.Location = new Point(13, 9);
+            Label_Laplacian.Location = new Point(11, 10);
             Label_Laplacian.Margin = new Padding(2, 2, 2, 0);
             Label_Laplacian.Name = "Label_Laplacian";
-            Label_Laplacian.Size = new Size(190, 13);
+            Label_Laplacian.Size = new Size(231, 16);
             Label_Laplacian.TabIndex = 20;
             Label_Laplacian.Text = "Filter used in Laplacian operator";
             // 
@@ -1445,13 +1445,13 @@ namespace Image_Processing
             Table_Gradient.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             Table_Gradient.Controls.Add(Label_Gradient, 0, 0);
             Table_Gradient.Controls.Add(Panel_Gradient, 0, 1);
-            Table_Gradient.Location = new Point(16, 171);
+            Table_Gradient.Location = new Point(7, 197);
             Table_Gradient.Name = "Table_Gradient";
             Table_Gradient.RowCount = 2;
             Table_Gradient.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             Table_Gradient.RowStyles.Add(new RowStyle(SizeType.Absolute, 47F));
             Table_Gradient.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            Table_Gradient.Size = new Size(307, 71);
+            Table_Gradient.Size = new Size(325, 71);
             Table_Gradient.TabIndex = 44;
             // 
             // Label_Gradient
@@ -1462,7 +1462,7 @@ namespace Image_Processing
             Label_Gradient.Location = new Point(3, 3);
             Label_Gradient.Margin = new Padding(2, 2, 2, 0);
             Label_Gradient.Name = "Label_Gradient";
-            Label_Gradient.Size = new Size(55, 13);
+            Label_Gradient.Size = new Size(71, 17);
             Label_Gradient.TabIndex = 19;
             Label_Gradient.Text = "Gradient";
             // 
@@ -1473,7 +1473,7 @@ namespace Image_Processing
             Panel_Gradient.Location = new Point(1, 23);
             Panel_Gradient.Margin = new Padding(0);
             Panel_Gradient.Name = "Panel_Gradient";
-            Panel_Gradient.Size = new Size(305, 47);
+            Panel_Gradient.Size = new Size(323, 47);
             Panel_Gradient.TabIndex = 20;
             // 
             // Button_Gradient
@@ -1482,7 +1482,7 @@ namespace Image_Processing
             Button_Gradient.ForeColor = SystemColors.ActiveCaptionText;
             Button_Gradient.Location = new Point(69, 9);
             Button_Gradient.Name = "Button_Gradient";
-            Button_Gradient.Size = new Size(169, 30);
+            Button_Gradient.Size = new Size(187, 30);
             Button_Gradient.TabIndex = 19;
             Button_Gradient.Text = "Sobel Magnitude Operator";
             Button_Gradient.UseVisualStyleBackColor = true;
@@ -1497,13 +1497,13 @@ namespace Image_Processing
             Table_SharpeningFilter.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             Table_SharpeningFilter.Controls.Add(Label_Sharpening, 0, 0);
             Table_SharpeningFilter.Controls.Add(Panel_SharpeningFilter, 0, 1);
-            Table_SharpeningFilter.Location = new Point(16, 94);
+            Table_SharpeningFilter.Location = new Point(7, 94);
             Table_SharpeningFilter.Name = "Table_SharpeningFilter";
             Table_SharpeningFilter.RowCount = 2;
             Table_SharpeningFilter.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            Table_SharpeningFilter.RowStyles.Add(new RowStyle(SizeType.Absolute, 47F));
+            Table_SharpeningFilter.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));
             Table_SharpeningFilter.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            Table_SharpeningFilter.Size = new Size(307, 71);
+            Table_SharpeningFilter.Size = new Size(326, 92);
             Table_SharpeningFilter.TabIndex = 43;
             // 
             // Label_Sharpening
@@ -1514,7 +1514,7 @@ namespace Image_Processing
             Label_Sharpening.Location = new Point(3, 3);
             Label_Sharpening.Margin = new Padding(2, 2, 2, 0);
             Label_Sharpening.Name = "Label_Sharpening";
-            Label_Sharpening.Size = new Size(103, 13);
+            Label_Sharpening.Size = new Size(133, 17);
             Label_Sharpening.TabIndex = 19;
             Label_Sharpening.Text = "Sharpening Filter";
             // 
@@ -1524,19 +1524,20 @@ namespace Image_Processing
             Panel_SharpeningFilter.Controls.Add(button2);
             Panel_SharpeningFilter.Controls.Add(button3);
             Panel_SharpeningFilter.Dock = DockStyle.Fill;
-            Panel_SharpeningFilter.Location = new Point(1, 23);
+            Panel_SharpeningFilter.Location = new Point(1, 27);
             Panel_SharpeningFilter.Margin = new Padding(0);
             Panel_SharpeningFilter.Name = "Panel_SharpeningFilter";
-            Panel_SharpeningFilter.Size = new Size(305, 47);
+            Panel_SharpeningFilter.Size = new Size(324, 64);
             Panel_SharpeningFilter.TabIndex = 20;
             // 
             // button1
             // 
             button1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            button1.Font = new Font("Microsoft Sans Serif", 7.8F, FontStyle.Regular, GraphicsUnit.Point);
             button1.ForeColor = SystemColors.ActiveCaptionText;
-            button1.Location = new Point(204, 4);
+            button1.Location = new Point(216, 7);
             button1.Name = "button1";
-            button1.Size = new Size(95, 39);
+            button1.Size = new Size(95, 49);
             button1.TabIndex = 21;
             button1.Text = "Highboost Filtering";
             button1.UseVisualStyleBackColor = true;
@@ -1545,10 +1546,12 @@ namespace Image_Processing
             // button2
             // 
             button2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            button2.Font = new Font("Microsoft Sans Serif", 7.20000029F, FontStyle.Regular, GraphicsUnit.Point);
             button2.ForeColor = SystemColors.ActiveCaptionText;
-            button2.Location = new Point(6, 4);
+            button2.Location = new Point(17, 7);
+            button2.Margin = new Padding(1);
             button2.Name = "button2";
-            button2.Size = new Size(95, 39);
+            button2.Size = new Size(89, 49);
             button2.TabIndex = 19;
             button2.Text = "Highpass Filter";
             button2.UseVisualStyleBackColor = true;
@@ -1557,10 +1560,12 @@ namespace Image_Processing
             // button3
             // 
             button3.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            button3.Font = new Font("Microsoft Sans Serif", 7.8F, FontStyle.Regular, GraphicsUnit.Point);
             button3.ForeColor = SystemColors.ActiveCaptionText;
-            button3.Location = new Point(105, 4);
+            button3.Location = new Point(113, 7);
+            button3.Margin = new Padding(1);
             button3.Name = "button3";
-            button3.Size = new Size(95, 39);
+            button3.Size = new Size(94, 49);
             button3.TabIndex = 20;
             button3.Text = "Unsharp Masking";
             button3.UseVisualStyleBackColor = true;
@@ -1575,13 +1580,13 @@ namespace Image_Processing
             Table_SmoothChannels.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             Table_SmoothChannels.Controls.Add(Label_Smooth, 0, 0);
             Table_SmoothChannels.Controls.Add(Panel_SmoothChannels, 0, 1);
-            Table_SmoothChannels.Location = new Point(16, 17);
+            Table_SmoothChannels.Location = new Point(7, 11);
             Table_SmoothChannels.Name = "Table_SmoothChannels";
             Table_SmoothChannels.RowCount = 2;
             Table_SmoothChannels.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             Table_SmoothChannels.RowStyles.Add(new RowStyle(SizeType.Absolute, 47F));
             Table_SmoothChannels.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            Table_SmoothChannels.Size = new Size(307, 71);
+            Table_SmoothChannels.Size = new Size(326, 71);
             Table_SmoothChannels.TabIndex = 42;
             // 
             // Label_Smooth
@@ -1592,7 +1597,7 @@ namespace Image_Processing
             Label_Smooth.Location = new Point(3, 3);
             Label_Smooth.Margin = new Padding(2, 2, 2, 0);
             Label_Smooth.Name = "Label_Smooth";
-            Label_Smooth.Size = new Size(105, 13);
+            Label_Smooth.Size = new Size(134, 17);
             Label_Smooth.TabIndex = 19;
             Label_Smooth.Text = "Smooth Channels";
             // 
@@ -1604,7 +1609,7 @@ namespace Image_Processing
             Panel_SmoothChannels.Location = new Point(1, 23);
             Panel_SmoothChannels.Margin = new Padding(0);
             Panel_SmoothChannels.Name = "Panel_SmoothChannels";
-            Panel_SmoothChannels.Size = new Size(305, 47);
+            Panel_SmoothChannels.Size = new Size(324, 47);
             Panel_SmoothChannels.TabIndex = 20;
             // 
             // Button_Median
@@ -1613,7 +1618,7 @@ namespace Image_Processing
             Button_Median.ForeColor = SystemColors.ActiveCaptionText;
             Button_Median.Location = new Point(165, 10);
             Button_Median.Name = "Button_Median";
-            Button_Median.Size = new Size(118, 27);
+            Button_Median.Size = new Size(137, 27);
             Button_Median.TabIndex = 15;
             Button_Median.Text = "Median Filter";
             Button_Median.UseVisualStyleBackColor = true;
@@ -1625,7 +1630,7 @@ namespace Image_Processing
             Button_Averaging.ForeColor = SystemColors.ActiveCaptionText;
             Button_Averaging.Location = new Point(23, 10);
             Button_Averaging.Name = "Button_Averaging";
-            Button_Averaging.Size = new Size(118, 27);
+            Button_Averaging.Size = new Size(137, 27);
             Button_Averaging.TabIndex = 14;
             Button_Averaging.Text = "Averaging Filter";
             Button_Averaging.UseVisualStyleBackColor = true;
@@ -1990,7 +1995,7 @@ namespace Image_Processing
             imageNameLabel.ForeColor = SystemColors.ActiveCaptionText;
             imageNameLabel.Location = new Point(3, 10);
             imageNameLabel.Name = "imageNameLabel";
-            imageNameLabel.Size = new Size(41, 13);
+            imageNameLabel.Size = new Size(54, 17);
             imageNameLabel.TabIndex = 44;
             imageNameLabel.Text = "label10";
             imageNameLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -2294,7 +2299,7 @@ namespace Image_Processing
             Label_Feature.ForeColor = SystemColors.ActiveCaptionText;
             Label_Feature.Location = new Point(3, 5);
             Label_Feature.Name = "Label_Feature";
-            Label_Feature.Size = new Size(48, 15);
+            Label_Feature.Size = new Size(54, 18);
             Label_Feature.TabIndex = 0;
             Label_Feature.Text = "label10";
             // 

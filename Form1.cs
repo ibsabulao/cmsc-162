@@ -95,7 +95,7 @@ namespace Image_Processing
             Panel_Spatial.Location = Panel_imageEnhancement.Location;
             Panel_Enhancement.Location = Panel_imageEnhancement.Location;
             Panel_RestoreDegrade.Location = Panel_imageEnhancement.Location;
-            
+
             Panel_Spatial.Dock = DockStyle.Fill;
             Panel_Enhancement.Dock = DockStyle.Fill;
             Panel_RestoreDegrade.Dock = DockStyle.Fill;
@@ -2464,7 +2464,7 @@ namespace Image_Processing
                         processedImages.Add(foregroundImage);
                     }
 
-                    MessageBox.Show($"Background removed and saved.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Background removed.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             catch (Exception ex)
@@ -3112,7 +3112,7 @@ namespace Image_Processing
         // Apply the median filter to a specific pixel in the image
         private Bitmap ApplyMedian(Bitmap image, int filterSize)
         {
-             // Create a new Bitmap to store the filtered image with the same dimensions as the input image.
+            // Create a new Bitmap to store the filtered image with the same dimensions as the input image.
             Bitmap filteredImage = new Bitmap(image.Width, image.Height);
 
             // Iterate through each pixel in the input image.
@@ -3128,8 +3128,8 @@ namespace Image_Processing
                 }
             }
 
-             // Return the filtered image as a new Bitmap.
-             return filteredImage;
+            // Return the filtered image as a new Bitmap.
+            return filteredImage;
         }
 
         // Calculate the median color for a specific pixel in the image
